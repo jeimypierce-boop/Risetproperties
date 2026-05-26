@@ -3,14 +3,16 @@
 $host     = getenv('DB_HOST')     ?: 'localhost';
 $port     = getenv('DB_PORT')     ?: '3306';
 $user     = getenv('DB_USER')     ?: 'root';
-$password = getenv('DB_PASSWORD') ?: ''; // Leaves empty for local dev
+$password = getenv('DB_PASSWORD') ?: ''; 
 $dbname   = getenv('DB_NAME')     ?: 'riset_properties';
 
-// Establish connection with the Port included
+// Establish connection
 $conn = new mysqli($host, $user, $password, $dbname, (int)$port);
 
-// Check connection
 if ($conn->connect_error) {
     die("Database Connection failed: " . $conn->connect_error);
 }
+
+// >>> ADD THIS EXACT LINE BELOW TO FIX THE ERROR <<<
+$conn->query("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
 ?>
