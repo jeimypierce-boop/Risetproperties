@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Riset Property Management Dashboard</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Riset Property Management Dashboard">
+    <link rel="shortcut icon" href="images/fav.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link href="css/materialize.css" rel="stylesheet">
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+    <link href="css/style-mob.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: #f4f7fb;
+            color: #182235;
+            margin: 0;
+        }
+        .rd-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .rd-topbar {
+            width: 100%;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .rd-topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .rd-logo-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #e6f7ed;
+            color: #22c55e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .rd-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .rd-brand-title {
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 0.03em;
+        }
+        .rd-brand-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            margin: 0;
+        }
+        .rd-search-bar {
+            position: relative;
+            min-width: 240px;
+        }
+        .rd-search-bar input {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 999px;
+            padding: 10px 16px 10px 40px;
+            font-size: 14px;
+            background: #f8fafc;
+        }
+        .rd-search-bar i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        .rd-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .rd-button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .rd-icon-btn {
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #334155;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .rd-icon-btn span {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rd-profile {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 999px;
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+        .rd-profile .rd-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #d1fae5;
+            color: #047857;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .rd-layout {
+            display: flex;
+            gap: 20px;
+            padding: 20px 24px 100px;
+        }
+        .rd-sidebar {
+            width: 280px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            padding: 20px;
+            min-height: calc(100vh - 116px);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .rd-sidebar h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #475569;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .rd-sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 8px;
+        }
+        .rd-sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #334155;
+            padding: 12px 16px;
+            border-radius: 14px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .rd-sidebar-nav a.active,
+        .rd-sidebar-nav a:hover {
+            background: #ecfdf5;
+            color: #047857;
+        }
+        .rd-sidebar-nav i {
+            width: 22px;
+            text-align: center;
+        }
+        .rd-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .rd-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+        .rd-card-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 22px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 12px 40px rgba(15,23,42,0.04);
+        }
+        .rd-panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .rd-panel-title h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #0f172a;
+        }
+        .rd-card-big {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 150px;
+        }
+        .rd-card-stat {
+            display: flex;
+            justify-content: space-between;
+            gap: 16x;
+            align-items: flex-start;
+        }
+        .rd-card-stat .rd-stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .rd-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+        }
+        .rd-stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .rd-stat-meta {
+            color: #57606a;
+            font-size: 13px;
+        }
+        .rd-stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecfdf5;
+            color: #16a34a;
+            font-size: 18px;
+        }
+        .rd-card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .rd-link-view {
+            color: #047857;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .rd-tag-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .rd-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .rd-main .rd-section {
+            display: grid;
+            gap: 18px;
+        }
+        .rd-show-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+        .rd-labeled-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            padding: 18px;
+        }
+        .rd-labeled-card h4 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #475569;
+        }
+        .rd-labeled-card .rd-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .rd-chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 18px;
+        }
+        .rd-chart-card {
+            background: white;
+            border-radius: 24px;
+            padding: 22px;
+            border: 1px solid #e5e7eb;
+        }
+        .rd-chart-placeholder {
+            min-height: 210px;
+            border-radius: 20px;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+            border: 1px dashed #c7d2fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .rd-payment-status {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .rd-status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+        }
+        .rd-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .rd-status-dot.green { background: #22c55e; }
+        .rd-status-dot.yellow { background: #f59e0b; }
+        .rd-status-dot.red { background: #ef4444; }
+        .rd-bottom-nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0;
+            z-index: 50;
+        }
+        .rd-bottom-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 0;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .rd-bottom-nav a.active {
+            color: #047857;
+        }
+        .rd-bottom-nav i {
+            font-size: 16px;
+        }
+        @media (max-width: 1120px) {
+            .rd-layout {
+                flex-direction: column;
+                padding: 20px 16px 140px;
+            }
+            .rd-sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            .rd-chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 760px) {
+            .rd-topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .rd-search-bar {
+                min-width: 100%;
+            }
+            .rd-actions {
+                justify-content: space-between;
+            }
+            .rd-bottom-nav {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .rd-bottom-nav a {
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="rd-shell">
+        <header class="rd-topbar">
+            <div class="rd-topbar-left">
+                <div class="rd-logo-badge">R</div>
+                <div class="rd-brand">
+                    <span class="rd-brand-title">RENTALDESK</span>
+                    <span class="rd-brand-subtitle">Business Owner</span>
+                </div>
+            </div>
+            <div class="rd-search-bar">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="Search tenant or unit">
+            </div>
+            <div class="rd-actions">
+                <button class="rd-button"><i class="fa fa-plus"></i> Create new</button>
+                <button class="rd-icon-btn"><i class="fa fa-bell"></i><span>2</span></button>
+                <button class="rd-icon-btn"><i class="fa fa-eye"></i></button>
+                <div class="rd-profile"><span class="rd-avatar">J</span>James</div>
+            </div>
+        </header>
+
+        <div class="rd-layout">
+            <aside class="rd-sidebar">
+                <h4>Dashboard</h4>
+                <nav>
+                    <ul class="rd-sidebar-nav">
+                        <li><a href="admin-dashboard-modern.php" class="active"><i class="fa fa-home"></i>Dashboard</a></li>
+                        <li><a href="admin-reports.php"><i class="fa fa-file-alt"></i>Reports</a></li>
+                        <li><a href="#"><i class="fa fa-check-circle"></i>Approvals</a></li>
+                    </ul>
+                </nav>
+                <h4>Properties</h4>
+                <nav>
+                    <ul class="rd-sidebar-nav">
+                        <li><a href="admin-all-Properties.html"><i class="fa fa-building"></i>Properties</a></li>
+                        <li><a href="admin-add-Properties.html"><i class="fa fa-plus-square"></i>Add Property</a></li>
+                        <li><a href="#"><i class="fa fa-home"></i>Units</a></li>
+                        <li><a href="admin-user-all.php"><i class="fa fa-users"></i>Tenants</a></li>
+                        <li><a href="admin-leases.php"><i class="fa fa-file-contract"></i>Leases</a></li>
+                    </ul>
+                </nav>
+                <h4>Utilities</h4>
+                <nav>
+                    <ul class="rd-sidebar-nav">
+                        <li><a href="#"><i class="fa fa-file-invoice"></i>Invoices</a></li>
+                        <li><a href="#"><i class="fa fa-wallet"></i>Collections</a></li>
+                        <li><a href="#"><i class="fa fa-bolt"></i>Utility Readings</a></li>
+                        <li><a href="#"><i class="fa fa-plug"></i>Electricity Bills</a></li>
+                        <li><a href="#"><i class="fa fa-money-bill-wave"></i>Payments</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <main class="rd-main">
+                <section class="rd-cards-grid">
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Total Properties</div>
+                            <div class="rd-stat-number">1</div>
+                            <div class="rd-stat-meta">Active now</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-building"></i></div>
+                        <a class="rd-link-view" href="#">View</a>
+                    </article>
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Total Units</div>
+                            <div class="rd-stat-number">1</div>
+                            <div class="rd-stat-meta">Occupancy 100%</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-home"></i></div>
+                        <a class="rd-link-view" href="#">View</a>
+                    </article>
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Total Tenants</div>
+                            <div class="rd-stat-number">1</div>
+                            <div class="rd-tag-list">
+                                <span class="rd-tag">Green:0</span>
+                                <span class="rd-tag">Yellow:1</span>
+                                <span class="rd-tag">Red:0</span>
+                                <span class="rd-tag">Inactive:0</span>
+                            </div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-users"></i></div>
+                        <a class="rd-link-view" href="#">View</a>
+                    </article>
+                </section>
+
+                <section class="rd-cards-grid">
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Rent Invoices</div>
+                            <div class="rd-stat-number">KES 6,000.00</div>
+                            <div class="rd-stat-meta">This month gross billed</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-wallet"></i></div>
+                    </article>
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Collected</div>
+                            <div class="rd-stat-number">KES 0.00</div>
+                            <div class="rd-tag-list">
+                                <span class="rd-tag">Rent KES 0.00</span>
+                                <span class="rd-tag">Other KES 0.00</span>
+                            </div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-hand-holding-usd"></i></div>
+                    </article>
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Outstanding Exposure</div>
+                            <div class="rd-stat-number">KES 6,000.00</div>
+                            <div class="rd-stat-meta">Live statement balances above zero</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-exclamation-circle"></i></div>
+                        <a class="rd-link-view" href="#">View</a>
+                    </article>
+                </section>
+
+                <section class="rd-cards-grid">
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Refunds</div>
+                            <div class="rd-stat-number">KES 0.00</div>
+                            <div class="rd-stat-meta">This month</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-undo"></i></div>
+                    </article>
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Total Expenses</div>
+                            <div class="rd-stat-number">KES 0.00</div>
+                            <div class="rd-stat-meta">This month</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-chart-line"></i></div>
+                        <a class="rd-link-view" href="#">View</a>
+                    </article>
+                    <article class="rd-card-panel rd-card-stat">
+                        <div class="rd-stat-info">
+                            <div class="rd-stat-label">Utilities Invoices</div>
+                            <div class="rd-stat-number">KES 0.00</div>
+                            <div class="rd-stat-meta">Billed utilities & non-rent</div>
+                        </div>
+                        <div class="rd-stat-icon"><i class="fa fa-bolt"></i></div>
+                    </article>
+                </section>
+
+                <section class="rd-section">
+                    <div class="rd-panel-title">
+                        <div>
+                            <h3>Tenant movement</h3>
+                            <p>This month (01 May - 18 May, 2026)</p>
+                        </div>
+                        <a class="rd-link-small" href="#">View report</a>
+                    </div>
+                    <div class="rd-show-grid">
+                        <article class="rd-labeled-card">
+                            <h4>New Tenants</h4>
+                            <div class="rd-number">1</div>
+                            <p>Created in period</p>
+                        </article>
+                        <article class="rd-labeled-card">
+                            <h4>Vacated</h4>
+                            <div class="rd-number">0</div>
+                            <p>Exited in period</p>
+                        </article>
+                        <article class="rd-labeled-card">
+                            <h4>Pending Move-out</h4>
+                            <div class="rd-number">0</div>
+                            <p>Currently tagged</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="rd-chart-grid">
+                    <article class="rd-chart-card">
+                        <div class="rd-panel-title">
+                            <div>
+                                <h3>Rent Collection Trend</h3>
+                                <p>Last 6 months</p>
+                            </div>
+                            <span class="rd-tag">Collected</span>
+                        </div>
+                        <div class="rd-chart-placeholder">Chart placeholder</div>
+                    </article>
+                    <article class="rd-chart-card">
+                        <div class="rd-panel-title">
+                            <div>
+                                <h3>Payment Status</h3>
+                                <p>Invoices breakdown this month</p>
+                            </div>
+                        </div>
+                        <div class="rd-payment-status">
+                            <div class="rd-status-chip"><span class="rd-status-dot green"></span>Closed</div>
+                            <div class="rd-status-chip"><span class="rd-status-dot yellow"></span>Pending</div>
+                            <div class="rd-status-chip"><span class="rd-status-dot red"></span>Cancelled</div>
+                        </div>
+                        <div class="rd-chart-small">Pie chart placeholder</div>
+                    </article>
+                </section>
+            </main>
+        </div>
+
+        <nav class="rd-bottom-nav">
+            <a href="admin-dashboard-modern.php" class="active"><i class="fa fa-home"></i><span>Dashboard</span></a>
+            <a href="admin-all-Properties.html"><i class="fa fa-building"></i><span>Properties</span></a>
+            <a href="admin-user-all.php"><i class="fa fa-users"></i><span>Tenants</span></a>
+            <a href="admin-rent-payments.php"><i class="fa fa-file-invoice"></i><span>Invoices</span></a>
+            <a href="admin-reports.php"><i class="fa fa-chart-bar"></i><span>Reports</span></a>
+        </nav>
+    </div>
+
+    <script src="js/main.min.js"></script>
+    <script src="js/materialize.min.js"></script>`r`n    <script src="js/bootstrap.min.js"></script>
+    <script src="js/custom.js"></script>
+</body>
+</html>
+
+
