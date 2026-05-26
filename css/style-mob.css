@@ -10,6 +10,48 @@
  -----------------------------------------------*/
  
 /*-------------------------------------------------------*/
+/* Global responsive helpers for mobile layout fit */
+/*-------------------------------------------------------*/
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    box-sizing: border-box;
+}
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+body {
+    min-width: 0;
+    word-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+}
+img, svg, iframe, embed, object, video {
+    max-width: 100%;
+    height: auto;
+}
+table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: auto;
+    word-break: break-word;
+}
+.table-responsive {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+input, textarea, select, button, .btn, .form-control {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.container, .container-fluid, .row {
+    min-width: 0;
+}
+iframe {
+    max-width: 100%;
+}
+
+/*-------------------------------------------------------*/
 /* When the browser is between 0px and 1300px wide,below css will be applied.
 /*-------------------------------------------------------*/
 @media screen and (max-width:1300px){
@@ -22,7 +64,20 @@
 /* When the browser is between 0px and 1200px wide,below css will be applied.
 /*-------------------------------------------------------*/
 @media screen and (max-width:1200px){
-.ed-rsear-in{width:100%;}
+    .ed-rsear-in{width:100%;}
+    .container, .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    [class*="col-"] {
+        min-width: 0;
+    }
 }
 
 /*-------------------------------------------------------*/
