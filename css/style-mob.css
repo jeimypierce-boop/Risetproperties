@@ -78,12 +78,58 @@ iframe {
     [class*="col-"] {
         min-width: 0;
     }
+    /* Mobile overflow prevention - flex and button layouts */
+    [style*="display: flex"] {
+        flex-wrap: wrap !important;
+    }
+    button, .btn, a.btn, input[type="button"], input[type="submit"] {
+        max-width: 100% !important;
+        word-break: break-word;
+    }
+    .btn-group, .button-group, .form-group {
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+    /* Forms on mobile */
+    input, select, textarea {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    form {
+        width: 100% !important;
+    }
 }
 
 /*-------------------------------------------------------*/
 /* When the browser is between 0px and 992px wide,below css will be applied.
 /*-------------------------------------------------------*/
  @media screen and (max-width:992px){
+    /* Mobile layout improvements for properties/landlord pages */
+    .filters-section, .filters-section .row {
+        width: 100% !important;
+    }
+    .filters-section .col-md-1, .filters-section .col-md-3, .filters-section .col-md-4 {
+        width: 100% !important;
+        min-width: 0;
+        margin-bottom: 10px;
+    }
+    /* Flex layout buttons stack on mobile */
+    [style*="display: flex; flex-wrap"] {
+        flex-direction: column !important;
+    }
+    [style*="display: flex; gap"] {
+        gap: 8px !important;
+    }
+    .btn, button, input[type="button"], input[type="submit"], a.btn {
+        max-width: 100% !important;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .table, table {
+        font-size: 13px;
+    }
 	.ad-log-in {
 		width: 80%;
 		padding: 25px;
@@ -490,6 +536,32 @@ iframe {
 	width:50%;
 }
 
+/* Mobile phone layout fixes */
+.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6 {
+    width: 100% !important;
+    min-width: 0;
+    margin-bottom: 10px;
+}
+/* Compact buttons on small phones */
+.btn-group-sm .btn, .btn-sm {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+}
+/* Table font reduction for mobile */
+.table td, .table th {
+    padding: 6px 4px !important;
+    font-size: 12px;
+}
+/* Forms on mobile phones */
+.form-group {
+    margin-bottom: 12px;
+}
+input, select, textarea, .form-control {
+    padding: 8px 6px !important;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
 }
 
 /*-------------------------------------------------------*/
@@ -586,6 +658,33 @@ iframe {
     }
      .slider-con a{
          display:none;
+    }
+    /* Extra small phone overrides */
+    .btn, button, input[type="button"], input[type="submit"], a.btn {
+        width: 100%;
+        padding: 8px 8px !important;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6 {
+        width: 100% !important;
+        margin-bottom: 8px;
+    }
+    [style*="display: flex"] {
+        flex-direction: column !important;
+    }
+    .table {
+        font-size: 11px;
+    }
+    .table td, .table th {
+        padding: 4px 3px !important;
+    }
+    h1, h2, h3, h4, h5 {
+        font-size: 16px !important;
+        line-height: 1.2 !important;
+    }
+    p, span, label {
+        font-size: 14px !important;
     }
 }
 
