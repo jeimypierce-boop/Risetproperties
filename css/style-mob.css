@@ -29,12 +29,6 @@ img, svg, iframe, embed, object, video {
     max-width: 100%;
     height: auto;
 }
-table {
-    width: 100% !important;
-    max-width: 100% !important;
-    table-layout: auto;
-    word-break: break-word;
-}
 .table-responsive {
     width: 100% !important;
     overflow-x: auto !important;
@@ -49,6 +43,90 @@ input, textarea, select, button, .btn, .form-control {
 }
 iframe {
     max-width: 100%;
+}
+
+@media screen and (max-width: 1200px) {
+    /*-------------------------------------------------------*/
+    /* Force all flex containers to stack on mobile */
+    [style*="display: flex"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+    }
+    /* Disable inline gaps and force full width */
+    [style*="gap: 10px"], [style*="gap: 12px"], [style*="gap: 8px"] {
+        gap: 0 !important;
+    }
+    /* Force row class to wrap properly */
+    .row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    /* All columns to 100% on mobile */
+    [class*="col-"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-bottom: 10px !important;
+    }
+    /* Form controls - override all inline width styles */
+    .form-control, input, select, textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px 10px !important;
+    }
+    /* Buttons and links - override inline display and width */
+    .btn, button, a.btn, input[type="button"], input[type="submit"] {
+        width: 100% !important;
+        display: block !important;
+        margin-bottom: 8px !important;
+        padding: 10px 12px !important;
+    }
+    /* Override inline-flex buttons */
+    [style*="display: inline-flex"] {
+        display: flex !important;
+        width: 100% !important;
+    }
+    /* Divs with inline width styles */
+    div[style*="width:"] {
+        width: 100% !important;
+    }
+    /* Override max-width constraints on paragraphs */
+    p[style*="max-width"] {
+        max-width: 100% !important;
+    }
+
+    /*-------------------------------------------------------*/
+    /* Table-specific mobile fixes */
+    /*-------------------------------------------------------*/
+    .table, table {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: auto !important;
+        font-size: 13px !important;
+        word-break: break-word;
+    }
+    .table thead, .table tbody, .table tr, .table td, .table th {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+.table td, .table th {
+    padding: 6px 4px !important;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal !important;
+}
+.table-responsive {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border: 0 !important;
 }
 
 /*-------------------------------------------------------*/
@@ -78,27 +156,58 @@ iframe {
     [class*="col-"] {
         min-width: 0;
     }
-    /* Mobile overflow prevention - flex and button layouts */
-    [style*="display: flex"] {
-        flex-wrap: wrap !important;
+}
+
+/*-------------------------------------------------------*/
+/* Tablet layout tweaks (keeps desktop widths but improves flow)
+   Applies to screens between 768px and 1200px wide */
+/*-------------------------------------------------------*/
+@media screen and (min-width:768px) and (max-width:1200px){
+    /* Sidebar/content layout: keep sidebar but make it narrower on tablets */
+    .sb2-1 {
+        position: absolute;
+        width: 25%;
+        float: left;
     }
-    button, .btn, a.btn, input[type="button"], input[type="submit"] {
-        max-width: 100% !important;
-        word-break: break-word;
+    .sb2-2 {
+        width: 75%;
+        margin-left: 25%;
+        padding: 30px;
     }
-    .btn-group, .button-group, .form-group {
-        width: 100% !important;
-        display: flex !important;
-        flex-wrap: wrap !important;
+
+    /* Sidebar header compacting */
+    .sb2-12 ul {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        align-items: center;
     }
-    /* Forms on mobile */
-    input, select, textarea {
-        max-width: 100% !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
+    .sb2-12 ul li {
+        width: auto;
+        float: none;
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 8px;
     }
-    form {
-        width: 100% !important;
+
+    /* Sidebar links spacing */
+    .sb2-13 ul li a {
+        padding: 10px 16px;
+    }
+
+    /* Keep action buttons horizontal but constrained */
+    .property-actions {
+        flex-direction: row;
+        gap: 8px;
+    }
+    .property-actions a {
+        width: auto;
+        min-width: 120px;
+    }
+
+    /* Ensure wide tables scroll on tablets instead of overflowing layout */
+    .table-desi, .table-responsive {
+        overflow-x: auto;
     }
 }
 
@@ -129,6 +238,69 @@ iframe {
     }
     .table, table {
         font-size: 13px;
+    }
+    .table-desi {
+        overflow-x: auto !important;
+    }
+    .table-desi tbody tr td {
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+    .sb2, .sb2-1, .sb2-2 {
+        width: 100% !important;
+        float: none !important;
+        position: relative !important;
+        margin-left: 0 !important;
+    }
+    .sb2-1 {
+        height: auto !important;
+        padding-bottom: 15px !important;
+    }
+    .sb2-2 {
+        padding: 20px !important;
+        background: #e3e8ea !important;
+    }
+    .sb2-12 ul {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+    .sb2-12 ul li {
+        width: 100% !important;
+        float: none !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 8px 0 !important;
+    }
+    .sb2-12 ul li:nth-child(1), .sb2-12 ul li:nth-child(2), .sb2-12 ul li:nth-child(3) {
+        width: 100% !important;
+    }
+    .sb2-12 ul li img {
+        width: 48px !important;
+        height: auto !important;
+    }
+    .sb2-13 ul li a {
+        padding: 12px 15px !important;
+        position: relative !important;
+    }
+    .sb2-13 ul li a:after {
+        right: 15px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+    }
+    .sb2-2-2 ul li {
+        width: 100% !important;
+        float: none !important;
+        display: block !important;
+    }
+    .sb2-2-3 {
+        padding: 20px !important;
+    }
+    .property-actions {
+        flex-direction: column !important;
+    }
+    .property-actions a {
+        width: 100% !important;
     }
 	.ad-log-in {
 		width: 80%;
@@ -658,33 +830,6 @@ input, select, textarea, .form-control {
     }
      .slider-con a{
          display:none;
-    }
-    /* Extra small phone overrides */
-    .btn, button, input[type="button"], input[type="submit"], a.btn {
-        width: 100%;
-        padding: 8px 8px !important;
-        font-size: 13px;
-        margin-bottom: 6px;
-    }
-    .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6 {
-        width: 100% !important;
-        margin-bottom: 8px;
-    }
-    [style*="display: flex"] {
-        flex-direction: column !important;
-    }
-    .table {
-        font-size: 11px;
-    }
-    .table td, .table th {
-        padding: 4px 3px !important;
-    }
-    h1, h2, h3, h4, h5 {
-        font-size: 16px !important;
-        line-height: 1.2 !important;
-    }
-    p, span, label {
-        font-size: 14px !important;
     }
 }
 
