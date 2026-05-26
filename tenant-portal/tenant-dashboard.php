@@ -18,8 +18,16 @@ $tenant_email = htmlspecialchars($tenant['email']);
 
 ?>
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Tenant Dashboard</title><link href="../css/bootstrap.css" rel="stylesheet"></head>
-<body class="container mt-4">
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tenant Dashboard</title>
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/style-mob.css" rel="stylesheet">
+</head>
+<body class="container-fluid" style="min-width: 0; word-wrap: break-word; padding: 15px;">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <h3>Welcome, <?php echo $tenant_name; ?></h3>

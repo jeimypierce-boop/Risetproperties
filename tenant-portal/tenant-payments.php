@@ -54,17 +54,21 @@ $tenant_name = htmlspecialchars($tenant['first_name'] . ' ' . $tenant['last_name
 $tenant_email = htmlspecialchars($tenant['email']);
 ?>
 <!doctype html>
+<html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tenant Payments</title>
     <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/style-mob.css" rel="stylesheet">
     <style>
         .payment-summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
         .payment-card { border: 1px solid #e3e6f0; border-radius: .5rem; padding: 1rem; background: #fff; flex: 1; min-width: 220px; }
         .payment-card h5 { margin-bottom: .5rem; }
     </style>
 </head>
-<body class="container mt-4">
+<body class="container-fluid" style="min-width: 0; word-wrap: break-word; padding: 15px;">
   <nav class="mb-4">
     <a class="btn btn-sm btn-outline-secondary" href="tenant-dashboard.php">Dashboard</a>
     <a class="btn btn-sm btn-outline-primary" href="tenant-payments.php">Payments</a>

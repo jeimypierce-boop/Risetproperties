@@ -39,8 +39,16 @@ $requests = $conn->query("SELECT * FROM maintenance_requests WHERE tenant_id = {
 
 ?>
 <!doctype html>
-<html><head><meta charset="utf-8"><title>Maintenance Requests</title><link href="../css/bootstrap.css" rel="stylesheet"></head>
-<body class="container mt-4">
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Maintenance Requests</title>
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="../css/style-mob.css" rel="stylesheet">
+</head>
+<body class="container-fluid" style="min-width: 0; word-wrap: break-word; padding: 15px;">
   <nav class="mb-4">
     <a class="btn btn-sm btn-outline-secondary" href="tenant-dashboard.php">Dashboard</a>
     <a class="btn btn-sm btn-outline-primary" href="tenant-payments.php">Payments</a>
