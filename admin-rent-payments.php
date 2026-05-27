@@ -496,10 +496,48 @@ $user_role_label = get_user_role_label();
             var leaseSelect = document.querySelector('select[name="lease_id"]');
             var tenantSelect = document.getElementById('tenantSelect');
             if (leaseSelect && tenantSelect) {
+                var leaseOptions = Array.from(leaseSelect.options).map(function (opt) {
+                    return {
+                        value: opt.value,
+                        text: opt.textContent,
+                        tenantId: opt.dataset.tenantId || '',
+                        defaultSelected: opt.defaultSelected
+                    };
+                });
+
+                function refreshLeaseOptions() {
+                    var selectedTenant = tenantSelect.value;
+                    leaseSelect.innerHTML = '';
+
+                    var placeholder = document.createElement('option');
+                    placeholder.value = '';
+                    placeholder.textContent = 'Select Lease';
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    leaseSelect.appendChild(placeholder);
+
+                    leaseOptions.forEach(function (optData) {
+                        if (!optData.value) return;
+                        if (!selectedTenant || optData.tenantId === selectedTenant) {
+                            var option = document.createElement('option');
+                            option.value = optData.value;
+                            option.textContent = optData.text;
+                            option.dataset.tenantId = optData.tenantId;
+                            if (optData.defaultSelected) {
+                                option.selected = true;
+                            }
+                            leaseSelect.appendChild(option);
+                        }
+                    });
+                }
+
+                tenantSelect.addEventListener('change', refreshLeaseOptions);
+                refreshLeaseOptions();
+
                 leaseSelect.addEventListener('change', function () {
                     var selected = this.options[this.selectedIndex];
                     var tenantId = selected.dataset.tenantId || '';
-                    if (tenantId) {
+                    if (tenantId && tenantSelect.value !== tenantId) {
                         tenantSelect.value = tenantId;
                     }
                 });

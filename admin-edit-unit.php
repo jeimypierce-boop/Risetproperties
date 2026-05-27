@@ -483,7 +483,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <select id="tenant_id" name="tenant_id">
                                                 <option value="">-- None --</option>
                                                 <?php
-                                                $tres = $conn->query("SELECT id, first_name, last_name, email FROM tenants ORDER BY first_name");
+                                                $currentTenantId = intval($unit['tenant_id'] ?? 0);
+                                                $tenantQuery = "SELECT DISTINCT t.id, t.first_name, t.last_name, t.email FROM tenants t JOIN leases l ON t.id = l.tenant_id WHERE l.property_id = " . intval($property_id);
+                                                if ($currentTenantId) {
+                                                    $tenantQuery = "(" . $tenantQuery . ") UNION (SELECT id, first_name, last_name, email FROM tenants WHERE id = " . $currentTenantId . ") ORDER BY first_name";
+                                                } else {
+                                                    $tenantQuery .= " ORDER BY first_name";
+                                                }
+                                                $tres = $conn->query($tenantQuery);
                                                 while ($t = $tres->fetch_assoc()):
                                                 ?>
                                                     <option value="<?php echo $t['id']; ?>" <?php echo (($unit['tenant_id'] ?? '') == $t['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($t['first_name'] . ' ' . $t['last_name'] . ' (' . $t['email'] . ')'); ?></option>

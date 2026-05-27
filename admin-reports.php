@@ -162,14 +162,24 @@ $payment_status_result = $conn->query($payment_status_query);
 $payment_status = $payment_status_result ? $payment_status_result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Get properties for filter dropdown
-$properties_list = $conn->query("SELECT id, title AS property_title FROM properties WHERE 1=1" . $landlordFilter . " ORDER BY title");
+$properties_query = "SELECT id, title AS property_title FROM properties WHERE 1=1" . $landlordFilter;
+if ($tenant_filter) {
+    $properties_query .= " AND id IN (SELECT property_id FROM leases WHERE tenant_id = " . $tenant_filter . ")";
+}
+$properties_query .= " ORDER BY title";
+$properties_list = $conn->query($properties_query);
 
 // Get tenants for filter dropdown
-$tenants_list = $conn->query("SELECT DISTINCT t.id, CONCAT(t.first_name, ' ', t.last_name) as name 
+$tenants_query = "SELECT DISTINCT t.id, CONCAT(t.first_name, ' ', t.last_name) as name 
 FROM tenants t 
 JOIN leases l ON t.id = l.tenant_id 
 JOIN properties p ON l.property_id = p.id 
-WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
+WHERE 1=1" . $landlordFilter;
+if ($property_filter) {
+    $tenants_query .= " AND p.id = " . $property_filter;
+}
+$tenants_query .= " ORDER BY t.first_name";
+$tenants_list = $conn->query($tenants_query);
 
 ?>
 <!DOCTYPE html>

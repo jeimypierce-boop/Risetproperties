@@ -377,7 +377,7 @@ $stats = $stats_result->fetch_assoc();
                                 <select name="tenant_id" class="form-control" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                                     <option value="0">Any</option>
                                     <?php
-                                    $tresult = $conn->query("SELECT id, first_name, last_name, email FROM tenants ORDER BY first_name");
+                                    $tresult = $conn->query("SELECT DISTINCT t.id, t.first_name, t.last_name FROM tenants t JOIN leases l ON t.id = l.tenant_id WHERE l.property_id = " . intval($property_id) . " ORDER BY t.first_name");
                                     while ($tr = $tresult->fetch_assoc()):
                                     ?>
                                     <option value="<?php echo $tr['id']; ?>" <?php echo ($tenantFilter == $tr['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($tr['first_name'] . ' ' . $tr['last_name']); ?></option>

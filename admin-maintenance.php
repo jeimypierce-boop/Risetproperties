@@ -249,7 +249,7 @@ $stats['completed'] = $conn->query("SELECT COUNT(*) as count FROM maintenance_ta
                                             <td><span class="<?php echo $priority_class; ?>"><?php echo strtoupper($row['priority'] ?? 'MEDIUM'); ?></span></td>
                                             <td><span class="label <?php echo $status_class; ?>"><?php echo ucfirst($row['status'] ?? 'Pending'); ?></span></td>
                                             <td><?php echo date('d M Y', strtotime($row['created_at'])); ?></td>
-                                            <td style="min-width: 200px;">
+                                            <td style="min-width: 0;">
                                                 <button class="btn btn-sm btn-info" onclick="openMaintenanceDetails(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['title']); ?>')"><i class="fa fa-eye"></i> View</button>
                                                 <button class="btn btn-sm btn-warning" onclick="openCommunication(<?php echo $row['id']; ?>, '<?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?>')"><i class="fa fa-comments"></i> Messages</button>
                                             </td>
@@ -306,9 +306,18 @@ $stats['completed'] = $conn->query("SELECT COUNT(*) as count FROM maintenance_ta
                             <select name="tenant_id" class="form-control" required>
                                 <option value="">Select Tenant</option>
                                 <?php 
-                                $tenants = $conn->query("SELECT id, CONCAT(first_name, ' ', last_name) as name FROM tenants");
+                                $tenantQuery = "SELECT t.id, CONCAT(t.first_name, ' ', t.last_name) as name, GROUP_CONCAT(DISTINCT l.property_id) as property_ids 
+                                    FROM tenants t 
+                                    JOIN leases l ON t.id = l.tenant_id 
+                                    JOIN properties p ON l.property_id = p.id 
+                                    WHERE 1=1";
+                                if ($landlord_id) {
+                                    $tenantQuery .= " AND p.landlord_id = " . intval($landlord_id);
+                                }
+                                $tenantQuery .= " GROUP BY t.id ORDER BY t.first_name";
+                                $tenants = $conn->query($tenantQuery);
                                 while($t = $tenants->fetch_assoc()): ?>
-                                <option value="<?php echo $t['id']; ?>"><?php echo htmlspecialchars($t['name']); ?></option>
+                                <option value="<?php echo $t['id']; ?>" data-property-ids="<?php echo htmlspecialchars($t['property_ids']); ?>"><?php echo htmlspecialchars($t['name']); ?></option>
                                 <?php endwhile; ?>
                             </select>
                         </div>
@@ -493,6 +502,68 @@ $stats['completed'] = $conn->query("SELECT COUNT(*) as count FROM maintenance_ta
                     document.getElementById('detailsContent').innerHTML = '<p style="color: red;">Error loading details</p>';
                 });
         }
+
+        function refreshMaintenanceTenantOptions() {
+            var propertySelect = document.querySelector('select[name="property_id"]');
+            var tenantSelect = document.querySelector('select[name="tenant_id"]');
+            if (!propertySelect || !tenantSelect) {
+                return;
+            }
+
+            var originalTenantOptions = Array.from(tenantSelect.options).map(function (opt) {
+                return {
+                    value: opt.value,
+                    text: opt.textContent,
+                    propertyIds: opt.dataset.propertyIds || '',
+                    defaultSelected: opt.defaultSelected
+                };
+            });
+
+            function applyTenantFilter() {
+                var selectedProperty = propertySelect.value;
+                tenantSelect.innerHTML = '';
+
+                var placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Select Tenant';
+                placeholder.disabled = true;
+                placeholder.selected = true;
+                tenantSelect.appendChild(placeholder);
+
+                originalTenantOptions.forEach(function (optData) {
+                    if (!optData.value) {
+                        return;
+                    }
+                    if (!selectedProperty) {
+                        var option = document.createElement('option');
+                        option.value = optData.value;
+                        option.textContent = optData.text;
+                        option.dataset.propertyIds = optData.propertyIds;
+                        if (optData.defaultSelected) {
+                            option.selected = true;
+                        }
+                        tenantSelect.appendChild(option);
+                        return;
+                    }
+                    var properties = optData.propertyIds.split(',');
+                    if (properties.indexOf(selectedProperty) !== -1) {
+                        var option = document.createElement('option');
+                        option.value = optData.value;
+                        option.textContent = optData.text;
+                        option.dataset.propertyIds = optData.propertyIds;
+                        if (optData.defaultSelected) {
+                            option.selected = true;
+                        }
+                        tenantSelect.appendChild(option);
+                    }
+                });
+            }
+
+            propertySelect.addEventListener('change', applyTenantFilter);
+            applyTenantFilter();
+        }
+
+        refreshMaintenanceTenantOptions();
 
         // Handle comment form submission
         document.getElementById('addCommentForm')?.addEventListener('submit', function(e) {
