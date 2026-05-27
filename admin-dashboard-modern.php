@@ -510,6 +510,151 @@ $user_info = get_user_info();
             margin-right: 10px;
             width: 18px;
         }
+        
+        /* Live Chat Button */
+        .rd-live-chat {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: #47C363;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 150;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .rd-live-chat i {
+            font-size: 16px;
+        }
+        
+        /* Status Filter Tabs */
+        .rd-status-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding: 0 5px;
+        }
+        
+        .rd-status-tab {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #666;
+        }
+        
+        .rd-status-tab.active {
+            background: #e8f5e9;
+            border-color: #47C363;
+            color: #47C363;
+        }
+        
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            /* Hide all stat cards except Total Units and Occupancy on mobile */
+            .rd-stat-card:nth-child(n+3) {
+                display: none;
+            }
+            
+            /* Adjust padding for mobile */
+            .rd-container {
+                padding: 15px;
+                padding-bottom: 110px;
+            }
+            
+            .rd-header {
+                padding: 10px 15px;
+            }
+            
+            .rd-search-bar {
+                display: none;
+            }
+            
+            /* Full width search on mobile */
+            .rd-search-section {
+                margin-bottom: 15px;
+            }
+            
+            .rd-search-main input {
+                border-radius: 20px;
+                padding: 10px 15px;
+                width: 100%;
+            }
+            
+            /* Adjust stat card for mobile */
+            .rd-stat-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .rd-stat-value {
+                font-size: 28px;
+            }
+            
+            /* Adjust bottom nav for mobile */
+            .rd-bottom-nav {
+                padding: 10px 0;
+            }
+            
+            .rd-nav-item {
+                padding: 8px 5px;
+                font-size: 10px;
+            }
+            
+            .rd-nav-item.active {
+                background: #f0f8f0;
+                border-radius: 12px;
+                border-top: none;
+                color: #47C363;
+            }
+            
+            .rd-nav-item i {
+                font-size: 20px;
+            }
+            
+            .rd-header-right {
+                gap: 15px;
+            }
+            
+            /* Live chat button position on mobile */
+            .rd-live-chat {
+                bottom: 75px;
+                right: 15px;
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .rd-container {
+                padding: 12px;
+                padding-bottom: 110px;
+            }
+            
+            .rd-header {
+                padding: 8px 12px;
+            }
+            
+            .rd-stat-card {
+                padding: 12px;
+                flex-direction: column;
+            }
+            
+            .rd-stat-icon {
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -533,6 +678,7 @@ $user_info = get_user_info();
             <a href="admin-reports.php" class="rd-icon-btn" title="Reports">
                 <i class="fa fa-eye"></i>
             </a>
+            <span style="font-size: 12px; color: #666; margin-right: 10px;"><?php echo get_user_role_label(); ?></span>
             <a href="admin-setting.html" class="rd-profile" title="Profile"><?php echo strtoupper(substr($user_info['name'], 0, 1)); ?></a>
         </div>
     </div>
@@ -571,6 +717,11 @@ $user_info = get_user_info();
             <button class="rd-btn-add" title="Create New">
                 <i class="fa fa-plus"></i>
             </button>
+        </div>
+        
+        <!-- Status Filter Tabs (Mobile) -->
+        <div class="rd-status-tabs">
+            <div class="rd-status-tab active">Active now</div>
         </div>
         
         <!-- Total Properties -->
@@ -667,6 +818,12 @@ $user_info = get_user_info();
             <a href="admin-event-all.html" class="rd-stat-view-btn">View</a>
         </div>
     </div>
+    
+    <!-- Floating Live Chat Button -->
+    <button class="rd-live-chat" title="Live Chat">
+        <i class="fa fa-comments"></i>
+        <span>Live Chat</span>
+    </button>
     
     <!-- Bottom Navigation -->
     <div class="rd-bottom-nav">
