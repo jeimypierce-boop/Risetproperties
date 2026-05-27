@@ -351,7 +351,6 @@ WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
                     <div id="rent-roll" class="report-content">
                         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                             <button class="btn-export" onclick="printReport('rent-roll-table')"><i class="fa fa-print"></i> Print</button>
-                            <button class="btn-export" onclick="downloadTableCSV('rent-roll-table', 'rent-roll')"><i class="fa fa-download"></i> Download CSV</button>
                         </div>
                         <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
                             <table class="report-table" id="rent-roll-table">
@@ -403,7 +402,6 @@ WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
                     <div id="aged-receivables" class="report-content">
                         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                             <button class="btn-export" onclick="printReport('aged-receivables-table')"><i class="fa fa-print"></i> Print</button>
-                            <button class="btn-export" onclick="downloadTableCSV('aged-receivables-table', 'aged-receivables')"><i class="fa fa-download"></i> Download CSV</button>
                         </div>
                         <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
                             <table class="report-table" id="aged-receivables-table">
@@ -444,7 +442,6 @@ WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
                     <div id="payment-history" class="report-content">
                         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                             <button class="btn-export" onclick="printReport('payment-history-table')"><i class="fa fa-print"></i> Print</button>
-                            <button class="btn-export" onclick="downloadTableCSV('payment-history-table', 'payment-history')"><i class="fa fa-download"></i> Download CSV</button>
                         </div>
                         <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
                             <table class="report-table" id="payment-history-table">
@@ -484,7 +481,6 @@ WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
                     <div id="occupancy" class="report-content">
                         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                             <button class="btn-export" onclick="printReport('occupancy-table')"><i class="fa fa-print"></i> Print</button>
-                            <button class="btn-export" onclick="downloadTableCSV('occupancy-table', 'occupancy')"><i class="fa fa-download"></i> Download CSV</button>
                         </div>
                         <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
                             <table class="report-table" id="occupancy-table">
@@ -629,12 +625,6 @@ WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
                 <html>
                 <head>
                     <title>Report</title>
-                    <style>
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th { background: #f5f5f5; padding: 10px; text-align: left; border: 1px solid #ddd; }
-                        td { padding: 8px; border: 1px solid #ddd; }
-                        tr:nth-child(even) { background: #f9f9f9; }
-                    </style>
                 </head>
                 <body>
                     <h2>Report - ${new Date().toLocaleDateString()}</h2>
@@ -648,24 +638,6 @@ WHERE 1=1" . $landlordFilter . " ORDER BY t.first_name");
             `);
         }
 
-        function downloadTableCSV(tableId, filename) {
-            const table = document.getElementById(tableId);
-            let csv = [];
-            
-            for (let i = 0; i < table.rows.length; i++) {
-                let row = [];
-                for (let j = 0; j < table.rows[i].cells.length; j++) {
-                    row.push('"' + table.rows[i].cells[j].innerText.replace(/"/g, '""') + '"');
-                }
-                csv.push(row.join(','));
-            }
-            
-            let csvContent = csv.join('\n');
-            let link = document.createElement('a');
-            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-            link.download = filename + '-' + new Date().toISOString().split('T')[0] + '.csv';
-            link.click();
-        }
     </script>
 </body>
 </html>
