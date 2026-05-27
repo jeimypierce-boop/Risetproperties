@@ -34,6 +34,31 @@ if ($landlord_id && $property['landlord_id'] != $landlord_id) {
     exit;
 }
 
+// Build relevant select lists for this property
+$default_unit_types = ['Studio', '1-Bedroom', '2-Bedroom', '3-Bedroom', '4-Bedroom', 'Penthouse'];
+$unit_type_options = [];
+$type_result = $conn->query("SELECT DISTINCT unit_type FROM units WHERE property_id = " . intval($property_id) . " AND unit_type <> '' ORDER BY unit_type");
+if ($type_result) {
+    while ($row = $type_result->fetch_assoc()) {
+        $unit_type_options[] = $row['unit_type'];
+    }
+}
+if (empty($unit_type_options)) {
+    $unit_type_options = $default_unit_types;
+}
+
+$default_status_options = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
+$status_options = [];
+$status_result = $conn->query("SELECT DISTINCT status FROM units WHERE property_id = " . intval($property_id) . " AND status <> '' ORDER BY status");
+if ($status_result) {
+    while ($row = $status_result->fetch_assoc()) {
+        $status_options[] = ucfirst(trim($row['status']));
+    }
+}
+if (empty($status_options)) {
+    $status_options = $default_status_options;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $unit_name = trim($_POST['unit_name'] ?? '');
     $unit_number = trim($_POST['unit_number'] ?? '');
@@ -335,21 +360,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <label for="unit_type">Unit Type</label>
                                             <select id="unit_type" name="unit_type">
                                                 <option value="">Select type</option>
-                                                <option value="Studio" <?php echo (($_POST['unit_type'] ?? '') === 'Studio') ? 'selected' : ''; ?>>Studio</option>
-                                                <option value="1-Bedroom" <?php echo (($_POST['unit_type'] ?? '') === '1-Bedroom') ? 'selected' : ''; ?>>1-Bedroom</option>
-                                                <option value="2-Bedroom" <?php echo (($_POST['unit_type'] ?? '') === '2-Bedroom') ? 'selected' : ''; ?>>2-Bedroom</option>
-                                                <option value="3-Bedroom" <?php echo (($_POST['unit_type'] ?? '') === '3-Bedroom') ? 'selected' : ''; ?>>3-Bedroom</option>
-                                                <option value="4-Bedroom" <?php echo (($_POST['unit_type'] ?? '') === '4-Bedroom') ? 'selected' : ''; ?>>4-Bedroom</option>
-                                                <option value="Penthouse" <?php echo (($_POST['unit_type'] ?? '') === 'Penthouse') ? 'selected' : ''; ?>>Penthouse</option>
+                                                <?php foreach ($unit_type_options as $unitType): ?>
+                                                    <option value="<?php echo htmlspecialchars($unitType); ?>" <?php echo (($_POST['unit_type'] ?? '') === $unitType) ? 'selected' : ''; ?>><?php echo htmlspecialchars($unitType); ?></option>
+                                                <?php endforeach; ?>
                                             </select>
                                         </div>
                                         <div class="form-group">
                                             <label for="status">Status</label>
                                             <select id="status" name="status">
-                                                <option value="Available" <?php echo (($_POST['status'] ?? 'Available') === 'Available') ? 'selected' : ''; ?>>Available</option>
-                                                <option value="Occupied" <?php echo (($_POST['status'] ?? '') === 'Occupied') ? 'selected' : ''; ?>>Occupied</option>
-                                                <option value="Maintenance" <?php echo (($_POST['status'] ?? '') === 'Maintenance') ? 'selected' : ''; ?>>Maintenance</option>
-                                                <option value="Reserved" <?php echo (($_POST['status'] ?? '') === 'Reserved') ? 'selected' : ''; ?>>Reserved</option>
+                                                <?php foreach ($status_options as $statusOption): ?>
+                                                    <option value="<?php echo htmlspecialchars($statusOption); ?>" <?php echo (($_POST['status'] ?? 'Available') === $statusOption) ? 'selected' : ''; ?>><?php echo htmlspecialchars($statusOption); ?></option>
+                                                <?php endforeach; ?>
                                             </select>
                                         </div>
                                     </div>
