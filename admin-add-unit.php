@@ -35,7 +35,7 @@ if ($landlord_id && $property['landlord_id'] != $landlord_id) {
 }
 
 // Build relevant select lists for this property
-$default_unit_types = ['Studio', '1-Bedroom', '2-Bedroom', '3-Bedroom', '4-Bedroom', 'Penthouse'];
+$default_unit_types = ['Shops', 'Stalls', 'Double Rooms', 'Single Rooms', 'Bedsitters', '1 Bedrooms', '2 Bedrooms', '3 Bedrooms', 'Bungalow'];
 $unit_type_options = [];
 $type_result = $conn->query("SELECT DISTINCT unit_type FROM units WHERE property_id = " . intval($property_id) . " AND unit_type <> '' ORDER BY unit_type");
 if ($type_result) {
