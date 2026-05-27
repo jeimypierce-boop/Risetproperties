@@ -156,6 +156,58 @@ $user_role_label = get_user_role_label();
         .summary-card h3 { margin: 10px 0; font-size: 24px; }
         .summary-card.success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
         .summary-card.danger { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .payment-table thead th {
+            background: #f4f8fb;
+            color: #333;
+            font-weight: 700;
+            border-bottom: 2px solid #dce2ea;
+            padding: 14px 12px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+        .payment-table tbody tr td {
+            padding: 12px 12px;
+            border-top: 1px solid #eef1f5;
+            vertical-align: middle;
+        }
+        .payment-table tbody tr td strong { color: #222; }
+        .payment-table tbody tr td[data-label="Amount Paid"],
+        .payment-table tbody tr td[data-label="Lease Rent"],
+        .payment-table tbody tr td[data-label="Actions"] {
+            white-space: nowrap;
+            text-align: right;
+        }
+        .payment-table tbody tr td[data-label="Status"] { text-align: center; }
+        .payment-table tbody tr td .btn { margin-bottom: 4px; }
+        @media (min-width: 992px) {
+            .payment-table th:nth-child(1), .payment-table td:nth-child(1) { width: 9%; }
+            .payment-table th:nth-child(2), .payment-table td:nth-child(2) { width: 14%; }
+            .payment-table th:nth-child(3), .payment-table td:nth-child(3) { width: 14%; }
+            .payment-table th:nth-child(4), .payment-table td:nth-child(4) { width: 10%; }
+            .payment-table th:nth-child(5), .payment-table td:nth-child(5) { width: 10%; }
+            .payment-table th:nth-child(6), .payment-table td:nth-child(6) { width: 10%; }
+            .payment-table th:nth-child(7), .payment-table td:nth-child(7) { width: 14%; }
+            .payment-table th:nth-child(8), .payment-table td:nth-child(8) { width: 8%; }
+            .payment-table th:nth-child(9), .payment-table td:nth-child(9) { width: 11%; }
+            .payment-table th:nth-child(10), .payment-table td:nth-child(10) { width: 10%; }
+        }
+        @media (max-width: 991px) {
+            .payment-summary { flex-direction: column; gap: 12px; }
+            .summary-card { min-width: auto; }
+            .inn-title button.btn { width: 100%; margin-bottom: 14px; }
+            .payment-table thead { display: none; }
+            .payment-table tbody tr { display: block; margin-bottom: 18px; border: 1px solid #e6e9ef; border-radius: 12px; padding: 14px; background: #ffffff; }
+            .payment-table tbody tr td { display: block; width: 100%; padding: 8px 0; border: none; }
+            .payment-table tbody tr td:before { content: attr(data-label); display: block; font-size: 11px; font-weight: 700; color: #667; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+            .payment-table tbody tr td[data-label="Actions"] { padding-bottom: 0; }
+            .payment-table tbody tr td .btn { display: inline-flex; width: auto; margin-right: 8px; margin-bottom: 8px; }
+            .payment-table tbody tr td[data-label="Amount Paid"],
+            .payment-table tbody tr td[data-label="Lease Rent"],
+            .payment-table tbody tr td[data-label="Actions"] { text-align: left; }
+            .payment-table tbody tr td[data-label="Status"] { text-align: left; }
+            .payment-table tbody tr td[data-label="Reference"] { word-break: break-word; }
+        }
     </style>
 </head>
 <body>
@@ -256,7 +308,7 @@ $user_role_label = get_user_role_label();
 
                                 <div class="tab-inn">
                                     <div class="table-responsive table-desi">
-                                        <table class="table table-hover">
+                                        <table class="table table-hover payment-table">
                                             <thead>
                                                 <tr>
                                                     <th>Date</th>
@@ -276,16 +328,16 @@ $user_role_label = get_user_role_label();
                                                     $status_class = $row['status'] == 'paid' ? 'label-success' : ($row['status'] == 'pending' ? 'label-warning' : 'label-danger');
                                                 ?>
                                                 <tr>
-                                                    <td><?php echo date('d M Y', strtotime($row['payment_date'])); ?></td>
-                                                    <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($row['property_title'] ?? 'N/A'); ?></td>
-                                                    <td>KES <?php echo number_format($row['monthly_rent'] ?? 0); ?></td>
-                                                    <td><strong>KES <?php echo number_format($row['amount_paid']); ?></strong></td>
-                                                    <td><?php echo ucfirst(str_replace('_', ' ', $row['payment_method'])); ?></td>
-                                                    <td><?php echo htmlspecialchars($row['transaction_id'] ?? ''); ?></td>
-                                                    <td><span class="label <?php echo $status_class; ?>"><?php echo ucfirst($row['status']); ?></span></td>
-                                                    <td><?php echo htmlspecialchars($row['reference']); ?></td>
-                                                    <td>
+                                                    <td data-label="Date"><?php echo date('d M Y', strtotime($row['payment_date'])); ?></td>
+                                                    <td data-label="Tenant"><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
+                                                    <td data-label="Property"><?php echo htmlspecialchars($row['property_title'] ?? 'N/A'); ?></td>
+                                                    <td data-label="Lease Rent">KES <?php echo number_format($row['monthly_rent'] ?? 0); ?></td>
+                                                    <td data-label="Amount Paid"><strong>KES <?php echo number_format($row['amount_paid']); ?></strong></td>
+                                                    <td data-label="Method"><?php echo ucfirst(str_replace('_', ' ', $row['payment_method'])); ?></td>
+                                                    <td data-label="Transaction"><?php echo htmlspecialchars($row['transaction_id'] ?? ''); ?></td>
+                                                    <td data-label="Status"><span class="label <?php echo $status_class; ?>"><?php echo ucfirst($row['status']); ?></span></td>
+                                                    <td data-label="Reference"><?php echo htmlspecialchars($row['reference']); ?></td>
+                                                    <td data-label="Actions">
                                                         <button type="button" class="btn btn-sm btn-info btn-view-receipt" data-payment-id="<?php echo $row['id']; ?>" data-payment-date="<?php echo date('d M Y', strtotime($row['payment_date'])); ?>" data-tenant="<?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name'], ENT_QUOTES); ?>" data-property="<?php echo htmlspecialchars($row['property_title'] ?? 'N/A', ENT_QUOTES); ?>" data-rent="<?php echo number_format($row['monthly_rent'] ?? 0); ?>" data-paid="<?php echo number_format($row['amount_paid']); ?>" data-method="<?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $row['payment_method'])), ENT_QUOTES); ?>" data-transaction="<?php echo htmlspecialchars($row['transaction_id'] ?? '', ENT_QUOTES); ?>" data-status="<?php echo ucfirst($row['status']); ?>" data-reference="<?php echo htmlspecialchars($row['reference'] ?? '', ENT_QUOTES); ?>">
                                                             <i class="fa fa-receipt"></i> Receipt
                                                         </button>
