@@ -51,8 +51,79 @@ $user_role_label = get_user_role_label();
     <link href="css/style.css" rel="stylesheet" />
     <link href="css/style-mob.css" rel="stylesheet" />
     <style>
-        .admin-tenant-table tbody tr td { vertical-align: middle; }
-        .admin-tenant-table tbody tr td .media-left img { width: 46px; height: 46px; }
+        .admin-tenant-table thead th {
+            background: #f4f8fb;
+            color: #333;
+            font-weight: 700;
+            border-bottom: 2px solid #dfe6ed;
+            padding: 14px 12px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+        }
+        .admin-tenant-table tbody tr td {
+            vertical-align: middle;
+            padding: 14px 12px;
+            border-top: 1px solid #eef1f5;
+        }
+        .admin-tenant-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .admin-tenant-table tbody tr td .media-left img {
+            width: 46px;
+            height: 46px;
+        }
+        .admin-tenant-table tbody tr td strong {
+            display: block;
+            color: #222;
+        }
+        .admin-tenant-table tbody tr td small {
+            color: #7a7a7a;
+        }
+        .admin-tenant-table tbody tr td[data-label="Rent"],
+        .admin-tenant-table tbody tr td[data-label="Balance"] {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .admin-tenant-table tbody tr td[data-label="Status"] {
+            text-align: center;
+        }
+        .admin-tenant-table tbody tr td[data-label="Action"] {
+            text-align: right;
+            white-space: nowrap;
+        }
+        @media (min-width: 992px) {
+            .admin-tenant-table th:nth-child(1),
+            .admin-tenant-table td:nth-child(1) {
+                width: 22%;
+            }
+            .admin-tenant-table th:nth-child(2),
+            .admin-tenant-table td:nth-child(2) {
+                width: 18%;
+            }
+            .admin-tenant-table th:nth-child(3),
+            .admin-tenant-table td:nth-child(3) {
+                width: 18%;
+            }
+            .admin-tenant-table th:nth-child(4),
+            .admin-tenant-table td:nth-child(4),
+            .admin-tenant-table th:nth-child(5),
+            .admin-tenant-table td:nth-child(5) {
+                width: 10%;
+            }
+            .admin-tenant-table th:nth-child(6),
+            .admin-tenant-table td:nth-child(6) {
+                width: 18%;
+            }
+            .admin-tenant-table th:nth-child(7),
+            .admin-tenant-table td:nth-child(7) {
+                width: 8%;
+            }
+            .admin-tenant-table th:nth-child(8),
+            .admin-tenant-table td:nth-child(8) {
+                width: 12%;
+            }
+        }
         @media (max-width: 991px) {
             .inn-title a.btn { float: none !important; width: 100% !important; margin-bottom: 12px !important; }
             .admin-tenant-table thead { display: none; }
