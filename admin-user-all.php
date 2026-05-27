@@ -50,6 +50,30 @@ $user_role_label = get_user_role_label();
     <link href="css/bootstrap.css" rel="stylesheet" />
     <link href="css/style.css" rel="stylesheet" />
     <link href="css/style-mob.css" rel="stylesheet" />
+    <style>
+        .admin-tenant-table tbody tr td { vertical-align: middle; }
+        .admin-tenant-table tbody tr td .media-left img { width: 46px; height: 46px; }
+        @media (max-width: 991px) {
+            .inn-title a.btn { float: none !important; width: 100% !important; margin-bottom: 12px !important; }
+            .admin-tenant-table thead { display: none; }
+            .admin-tenant-table tbody tr { display: block; width: 100%; margin-bottom: 18px; border: 1px solid #e8e8e8; border-radius: 12px; padding: 16px; background: #fff; }
+            .admin-tenant-table tbody tr td { display: block; width: 100%; padding: 8px 0; border: none; }
+            .admin-tenant-table tbody tr td:before { content: attr(data-label); display: block; font-size: 11px; font-weight: 700; color: #777; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+            .admin-tenant-table tbody tr td .media { display: flex; align-items: center; gap: 12px; }
+            .admin-tenant-table tbody tr td .media-body { padding-left: 0 !important; }
+            .admin-tenant-table tbody tr td small { display: block; color: #777; }
+            .admin-tenant-table tbody tr td .ad-st-view,
+            .admin-tenant-table tbody tr td .btn-receive-payment,
+            .admin-tenant-table tbody tr td .btn-delete,
+            .admin-tenant-table tbody tr td .btn-default { display: inline-flex; margin-bottom: 8px; }
+            .admin-tenant-table tbody tr td .ad-st-view { padding: 6px 10px; border-radius: 6px; background: #f1fdf6; color: #047a32; text-decoration: none; }
+            .admin-tenant-table tbody tr td .btn-receive-payment { padding: 6px 10px; border-radius: 6px; }
+            .admin-tenant-table tbody tr td .btn-delete { display: inline-flex; padding: 6px 10px; border-radius: 6px; font-size: 12px; }
+            .admin-tenant-table tbody tr td[data-label="Action"] { padding-bottom: 0; }
+            .admin-tenant-table tbody tr td[data-label="Contact"] { display: flex; flex-direction: column; gap: 4px; }
+            .admin-tenant-table tbody tr td[data-label="Status"] .label { margin-top: 4px; display: inline-flex; }
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid sb1">
@@ -187,7 +211,7 @@ $user_role_label = get_user_role_label();
                                 </div>
                                 <div class="tab-inn">
                                     <div class="table-responsive table-desi">
-                                        <table class="table table-hover">
+                                        <table class="table table-hover admin-tenant-table">
                                             <thead>
                                                 <tr>
                                                     <th>Tenant</th>
@@ -212,39 +236,39 @@ $user_role_label = get_user_role_label();
                                                     $leaseStatusLabel = !empty($row['lease_status']) ? htmlspecialchars($row['lease_status']) : 'No lease';
                                                 ?>
                                                     <tr>
-                                                        <td>
+                                                        <td data-label="Tenant">
                                                             <div class="media">
                                                                 <div class="media-left">
                                                                     <img src="<?php echo !empty($row['avatar']) ? htmlspecialchars($row['avatar']) : 'images/user/1.png'; ?>" alt="Tenant avatar" style="width:46px; height:46px; border-radius:50%; object-fit:cover;">
                                                                 </div>
                                                                 <div class="media-body" style="padding-left:12px;">
-                                                                    <strong><?php echo $tenantName; ?></strong><br>
+                                                                    <strong><?php echo $tenantName; ?></strong>
                                                                     <small>ID: <?php echo $tenantCode; ?></small>
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td>
-                                                            <strong><?php echo $propertyTitle; ?></strong><br>
+                                                        <td data-label="Unit / Property">
+                                                            <strong><?php echo $propertyTitle; ?></strong>
                                                             <small><?php echo htmlspecialchars($row['city'] ?: $row['country'] ?: '-'); ?></small>
                                                         </td>
-                                                        <td>
-                                                            <strong><?php echo $leasePeriod; ?></strong><br>
+                                                        <td data-label="Lease">
+                                                            <strong><?php echo $leasePeriod; ?></strong>
                                                             <small><?php echo $leaseStatusLabel; ?></small>
                                                         </td>
-                                                        <td>
+                                                        <td data-label="Rent">
                                                             <strong><?php echo $monthlyRent; ?></strong>
                                                         </td>
-                                                        <td>
+                                                        <td data-label="Balance">
                                                             <strong><?php echo $balanceDue; ?></strong>
                                                         </td>
-                                                        <td>
+                                                        <td data-label="Contact">
                                                             <div><?php echo htmlspecialchars($row['phone'] ?? '-'); ?></div>
                                                             <div><?php echo htmlspecialchars($row['email'] ?? '-'); ?></div>
                                                         </td>
-                                                        <td>
+                                                        <td data-label="Status">
                                                             <span class="label <?php echo $statusLabel; ?>"><?php echo htmlspecialchars($row['status'] ?: 'Unknown'); ?></span>
                                                         </td>
-                                                        <td>
+                                                        <td data-label="Action">
                                                             <a href="admin-user-add.php?id=<?php echo urlencode($row['id']); ?>" class="ad-st-view" style="margin-right:8px;">View</a>
                                                             <?php if (!empty($row['lease_id'])): ?>
                                                                 <button type="button" class="btn btn-sm btn-success btn-receive-payment" style="margin-right:8px;" data-tenant-id="<?php echo (int)$row['id']; ?>" data-lease-id="<?php echo (int)$row['lease_id']; ?>" data-tenant-name="<?php echo $tenantName; ?>">Receive</button>
