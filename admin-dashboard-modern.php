@@ -698,6 +698,7 @@ $user_info = get_user_info();
             <li><a href="admin-user-all.php"><i class="fa fa-users"></i> Tenants</a></li>
             <li><a href="admin-leases.php"><i class="fa fa-file-contract"></i> Leases</a></li>
             <li><a href="admin-rent-payments.php"><i class="fa fa-money"></i> Payments</a></li>
+            <li><a href="admin-expenses.php"><i class="fa fa-wallet"></i> Expenses</a></li>
             <li><a href="admin-maintenance.php"><i class="fa fa-wrench"></i> Maintenance</a></li>
             <li><a href="admin-event-all.html"><i class="fa fa-calendar"></i> Viewings</a></li>
             <li><a href="admin-reports.php"><i class="fa fa-bar-chart"></i> Reports</a></li>
