@@ -170,80 +170,302 @@
                     <ul>
                         <li><a href="index-2.html"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
                         </li>
-                        <li class="active-bre"><a href="#"> Dashboard</a>
+                        <li class="active-bre"><a href="#"> Settings</a>
                         </li>
                         <li class="page-back"><a href="index-2.html"><i class="fa fa-backward" aria-hidden="true"></i> Back</a>
                         </li>
                     </ul>
                 </div>
 
-                <!--== User Details ==-->
+<!--== Settings Content ==-->
                 <div class="sb2-2-3">
                     <div class="row">
                         <div class="col-md-12">
-						<div class="box-inn-sp admin-form">
+                            <div class="box-inn-sp admin-form">
                                 <div class="inn-title">
-                                    <h4>Website Setting</h4>
-                                    <p>Here you can edit your website basic details URL, Phone, Email, Address, User and password and more</p>
+                                    <h4>Settings</h4>
+                                    <p>Manage system configurations and agency defaults from one place.</p>
                                 </div>
                                 <div class="tab-inn">
-                                    <form>
-                                        <div class="row">
-                                            <div class="input-field col s6">
-                                                <input id="first_name" type="text" value="Education Master" class="validate" required>
-                                                <label for="first_name" class="">Website Title</label>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Subscription Plan</h5>
+                                                        <p>Your current plan and subscription status.</p>
+                                                        <div class="row">
+                                                            <div class="col-md-3 col-sm-6">
+                                                                <strong>Selected Plan</strong>
+                                                                <p>Starter Plan</p>
+                                                            </div>
+                                                            <div class="col-md-3 col-sm-6">
+                                                                <strong>Billed At</strong>
+                                                                <p>KES 5,000 / month</p>
+                                                            </div>
+                                                            <div class="col-md-3 col-sm-6">
+                                                                <strong>Status</strong>
+                                                                <p>Trial</p>
+                                                            </div>
+                                                            <div class="col-md-3 col-sm-6">
+                                                                <strong>Valid Until</strong>
+                                                                <p>2026-05-31</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Change plan</a>
+                                                                <a href="admin-billing-invoices.php" class="waves-effect waves-light btn">View billing invoices</a>
+                                                                <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Upgrade now</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="input-field col s6">
-                                                <input id="last_name" type="text" value="Education master is one of the best educational html template, it's suitable for all education websites like university,college,school,online eEducation,tution center,distance education,computer education" class="validate" required>
-                                                <label for="last_name" class="">Website descriptions</label>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Public Site</h5>
+                                                        <p>Set the subdomain and theme for your agency-facing landing page.</p>
+                                                        <form>
+                                                            <div class="row">
+                                                                <div class="input-field col s6">
+                                                                    <input id="subdomain" type="text" value="riset" class="validate" required>
+                                                                    <label for="subdomain">Subdomain</label>
+                                                                    <p class="helper-text">Must be unique; use letters, numbers, and dashes only.</p>
+                                                                </div>
+                                                                <div class="input-field col s6">
+                                                                    <input id="base-domain" type="text" value=".rentaldesk.co.ke" class="validate" readonly>
+                                                                    <label for="base-domain">Base domain</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="input-field col s12">
+                                                                    <select id="public-site-theme" class="browser-default">
+                                                                        <option selected>Default</option>
+                                                                        <option>Rental Desk</option>
+                                                                        <option>MyStay</option>
+                                                                        <option>Agency (Per-Business)</option>
+                                                                        <option>Tiwi Rentals</option>
+                                                                        <option>Rent8Group</option>
+                                                                    </select>
+                                                                    <label>Theme</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md-12">
+                                                                    <button type="button" class="waves-effect waves-light btn">Save public site settings</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h5>Services</h5>
+                                                                <p>Update available service types.</p>
+                                                                <a href="admin-services.php" class="waves-effect waves-light btn">Manage Services</a>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h5>Role & Permissions</h5>
+                                                                <p>Rename role labels and manage role capability access.</p>
+                                                                <a href="admin-role-permissions.php" class="waves-effect waves-light btn">Manage Role Access</a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h5>Banks</h5>
+                                                                <p>Manage bank names and account numbers.</p>
+                                                                <a href="admin-banks.php" class="waves-effect waves-light btn">Manage Banks</a>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h5>Payment Modes</h5>
+                                                                <p>Manage allowed payment methods.</p>
+                                                                <a href="admin-payment-modes.php" class="waves-effect waves-light btn">Manage Payment Modes</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Two-step verification</h5>
+                                                        <p>Control the extra login step (one-time code) for your account.</p>
+                                                        <div class="switch">
+                                                            <label>
+                                                                <input type="checkbox">
+                                                                <span class="lever"></span>
+                                                                Require a code at login
+                                                            </label>
+                                                        </div>
+                                                        <p class="text-muted">Disabled</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Generate Monthly Invoices</h5>
+                                                        <p>Create rent invoices for a selected month. New invoices are generated without a balance brought forward line.</p>
+                                                        <div class="switch">
+                                                            <label>
+                                                                <input type="checkbox" checked>
+                                                                <span class="lever"></span>
+                                                                Auto-generate invoices (every 5 minutes)
+                                                            </label>
+                                                        </div>
+                                                        <p class="text-muted">Enabled (default)</p>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <a href="admin-invoice-tools.php" class="waves-effect waves-light btn">Generate Invoices</a>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <a href="admin-invoice-tools.php" class="waves-effect waves-light btn">Regenerate Month</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Invoice Print & PDF</h5>
+                                                        <p>Control whether “Balance brought forward” appears on printed and PDF invoices.</p>
+                                                        <div class="switch">
+                                                            <label>
+                                                                <input type="checkbox">
+                                                                <span class="lever"></span>
+                                                                Hide balance brought forward on print/PDF
+                                                            </label>
+                                                        </div>
+                                                        <p class="text-muted">Visible</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Close Zero-Balance Invoices</h5>
+                                                        <p>Automatically close pending invoices when the statement balance is zero or the invoice total due is zero.</p>
+                                                        <div class="switch">
+                                                            <label>
+                                                                <input type="checkbox" checked>
+                                                                <span class="lever"></span>
+                                                                Auto-close pending invoices
+                                                            </label>
+                                                        </div>
+                                                        <p class="text-muted">Enabled (default)</p>
+                                                        <button type="button" class="waves-effect waves-light btn">Close Pending Invoices</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Collections reminders</h5>
+                                                        <p>Configure when the system sends upcoming-due, overdue, promise-to-pay, and escalation reminders.</p>
+                                                        <form>
+                                                            <div class="row">
+                                                                <div class="input-field col s3">
+                                                                    <input id="grace-period" type="number" value="0" class="validate">
+                                                                    <label for="grace-period">Grace period (days)</label>
+                                                                    <p class="helper-text">Invoice becomes overdue after due date + grace period.</p>
+                                                                </div>
+                                                                <div class="input-field col s3">
+                                                                    <input id="upcoming-due" type="text" value="5,3,1" class="validate">
+                                                                    <label for="upcoming-due">Upcoming due (days before)</label>
+                                                                    <p class="helper-text">Comma list. Example: 5,3,1 sends 5/3/1 days before due.</p>
+                                                                </div>
+                                                                <div class="input-field col s3">
+                                                                    <input id="overdue-days" type="text" value="1,3,7,14,30" class="validate">
+                                                                    <label for="overdue-days">Overdue (days after)</label>
+                                                                    <p class="helper-text">Comma list. Example: 1,3,7 sends after overdue starts.</p>
+                                                                </div>
+                                                                <div class="input-field col s3">
+                                                                    <input id="auto-escalate" type="number" value="60" class="validate">
+                                                                    <label for="auto-escalate">Auto-escalate after (days overdue)</label>
+                                                                    <p class="helper-text">Set 0 to disable auto-escalation.</p>
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" class="waves-effect waves-light btn">Save collections settings</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="box-inn-sp admin-form">
+                                                        <h5>Outstanding balance SMS</h5>
+                                                        <p>Send SMS to tenants whose total statement balance is above zero.</p>
+                                                        <div class="switch">
+                                                            <label>
+                                                                <input type="checkbox">
+                                                                <span class="lever"></span>
+                                                                Enable outstanding balance SMS
+                                                            </label>
+                                                        </div>
+                                                        <p class="text-muted">Uses the saved SMS provider credentials even when general SMS is disabled.</p>
+                                                        <div class="row">
+                                                            <div class="input-field col s4">
+                                                                <input id="first-send-day" type="number" value="16" class="validate">
+                                                                <label for="first-send-day">First send day of month</label>
+                                                                <p class="helper-text">Use 16 for reminders after the 15th.</p>
+                                                            </div>
+                                                            <div class="input-field col s4">
+                                                                <input id="repeat-days" type="number" value="3" class="validate">
+                                                                <label for="repeat-days">Repeat every (days)</label>
+                                                                <p class="helper-text">Use 3 to repeat every three days.</p>
+                                                            </div>
+                                                            <div class="input-field col s4">
+                                                                <input id="sms-status" type="text" value="Disabled" class="validate" readonly>
+                                                                <label for="sms-status">Status</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <button type="button" class="waves-effect waves-light btn">Test SMS</button>
+                                                                <a href="admin-communications.php?filter=subscriptions" class="waves-effect waves-light btn">Edit SMS template</a>
+                                                                <button type="button" class="waves-effect waves-light btn">Save outstanding SMS settings</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="input-field col s6">
-                                                <input id="phone" type="number" value="0152417841" class="validate" required>
-                                                <label for="phone">Phone number</label>
+
+                                        <div class="col-md-4">
+                                            <div class="box-inn-sp admin-form">
+                                                <h5>Controls</h5>
+                                                <p>Quick access to core system settings and business profile.</p>
+                                                <ul class="collection">
+                                                        <li class="collection-item"><a href="admin-business-profile.php">Business profile</a></li>
+                                                        <li class="collection-item"><a href="admin-services.php">Manage Services</a></li>
+                                                        <li class="collection-item"><a href="admin-role-permissions.php">Manage Role Access</a></li>
+                                                        <li class="collection-item"><a href="admin-banks.php">Manage Banks</a></li>
+                                                        <li class="collection-item"><a href="admin-payment-modes.php">Manage Payment Modes</a></li>
+                                                </ul>
                                             </div>
-                                            <div class="input-field col s6">
-                                                <input type="text" class="validate" value="education@master.com" required>
-                                                <label for="cphone" class="">Email is</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field col s6">
-                                                <input id="city" type="text" value="New york" class="validate">
-                                                <label for="city" class="">City</label>
-                                            </div>
-                                            <div class="input-field col s6">
-                                                <input id="country" type="text" value="United States" class="validate">
-                                                <label for="country" class="">Country</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field col s6">
-                                                <input id="password" type="password" value="srtg24356" class="validate">
-                                                <label for="password" class="">Password</label>
-                                            </div>
-                                            <div class="input-field col s6">
-                                                <input id="password1" type="password" value="sdfgh56dfg" class="validate">
-                                                <label for="password1" class="">Confirm Password</label>
+                                            <div class="box-inn-sp admin-form">
+                                                <h5>Overview</h5>
+                                                <p>System sections currently available.</p>
+                                                <strong>Sections</strong>
+                                                <p>7</p>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="input-field col s12">
-                                                <input type="text" value="www.educationmaster.com" class="validate">
-                                                <label>Website</label>
-                                            </div>
-                                            <div class="input-field col s12">
-                                                <input type="text" value="www.educationmaster.com/blog" class="validate">
-                                                <label>Website blog</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="input-field col s12">
-                                                <i class="waves-effect waves-light btn-large waves-input-wrapper" style=""><input type="submit" class="waves-button-input"></i>
-                                            </div>
-                                        </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
