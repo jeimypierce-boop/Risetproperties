@@ -8,6 +8,8 @@ $landlord_id = get_landlord_id();
 // Get dashboard statistics
 $stats = [
     'properties' => 0,
+    'total_units' => 0,
+    'occupied_units' => 0,
     'tenants' => 0,
     'leases' => 0,
     'pending_invoices' => 0,
@@ -22,6 +24,16 @@ $stats = [
 $result = $conn->query("SELECT COUNT(*) as count FROM properties WHERE deleted_at IS NULL" . ($landlord_id ? " AND landlord_id = " . intval($landlord_id) : ""));
 if ($result) {
     $stats['properties'] = $result->fetch_assoc()['count'];
+}
+
+$unitBaseJoin = " FROM units u JOIN properties p ON u.property_id = p.id WHERE p.deleted_at IS NULL" . ($landlord_id ? " AND p.landlord_id = " . intval($landlord_id) : "");
+$result = $conn->query("SELECT COUNT(*) as count" . $unitBaseJoin);
+if ($result) {
+    $stats['total_units'] = $result->fetch_assoc()['count'];
+}
+$result = $conn->query("SELECT COUNT(*) as count" . $unitBaseJoin . " AND u.status = 'Occupied'");
+if ($result) {
+    $stats['occupied_units'] = $result->fetch_assoc()['count'];
 }
 
 if ($landlord_id) {
@@ -48,7 +60,7 @@ if ($result) {
     $stats['monthly_revenue'] = floatval($result->fetch_assoc()['total']);
 }
 
-$result = $conn->query("SELECT COALESCE(SUM(l.monthly_rent) - COALESCE((SELECT SUM(rp.amount_paid) FROM rent_payments rp WHERE rp.lease_id = l.id AND DATE_FORMAT(rp.payment_date, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')), 0), 0) as total FROM leases l JOIN properties p ON l.property_id = p.id WHERE l.status = 'Active'" . ($landlord_id ? " AND p.landlord_id = " . intval($landlord_id) : ""));
+$result = $conn->query("SELECT COALESCE(SUM(l.monthly_rent) - COALESCE((SELECT SUM(rp.amount_paid) FROM rent_payments rp WHERE rp.lease_id = l.id AND rp.status = 'paid' AND DATE_FORMAT(rp.payment_date, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')), 0), 0) as total FROM leases l JOIN properties p ON l.property_id = p.id WHERE l.status = 'Active'" . ($landlord_id ? " AND p.landlord_id = " . intval($landlord_id) : ""));
 if ($result) {
     $stats['outstanding_rent'] = floatval($result->fetch_assoc()['total']);
 }
@@ -79,13 +91,11 @@ if ($result) {
     $stats['unread_messages'] = $result->fetch_assoc()['count'];
 }
 
-// Get occupancy percentage
-$result = $conn->query("SELECT COUNT(*) as total FROM properties WHERE deleted_at IS NULL" . ($landlord_id ? " AND landlord_id = " . intval($landlord_id) : ""));
-$total_props = $result ? $result->fetch_assoc()['total'] : 0;
-$result = $conn->query("SELECT COUNT(*) as active_leases FROM leases l JOIN properties p ON l.property_id = p.id WHERE l.status = 'Active'" . ($landlord_id ? " AND p.landlord_id = " . intval($landlord_id) : ""));
-$active_leases = $result ? $result->fetch_assoc()['active_leases'] : 0;
-$occupancy_percent = $total_props > 0 ? round(($active_leases / $total_props) * 100, 1) : 0;
-$occupied_props = $active_leases;
+// Get occupancy percentage based on units
+$total_units = $stats['total_units'];
+$occupied_units = $stats['occupied_units'];
+$occupancy_percent = $total_units > 0 ? round(($occupied_units / $total_units) * 100, 1) : 0;
+$occupied_props = $occupied_units;
 
 $user_info = get_user_info();
 ?>
@@ -741,7 +751,7 @@ $user_info = get_user_info();
             <div class="rd-stat-icon"><i class="fa fa-home"></i></div>
             <div class="rd-stat-content">
                 <div class="rd-stat-label">Total Units</div>
-                <div class="rd-stat-value"><?php echo $stats['properties']; ?></div>
+                <div class="rd-stat-value"><?php echo $stats['total_units']; ?></div>
                 <div style="margin-top: 10px;">
                     <div class="rd-stat-label">Occupancy</div>
                     <div class="rd-stat-value" style="font-size: 20px; margin: 5px 0;"><?php echo $occupancy_percent; ?>%</div>
@@ -751,7 +761,7 @@ $user_info = get_user_info();
                     <div class="rd-stat-details" style="margin-top: 10px;">
                         <div class="rd-stat-details-row">
                             <span class="rd-stat-details-label">Units occupied:</span>
-                            <span class="rd-stat-details-value"><?php echo $occupied_props; ?></span>
+                            <span class="rd-stat-details-value"><?php echo $occupied_props; ?>/<?php echo $stats['total_units']; ?> units</span>
                         </div>
                     </div>
                 </div>

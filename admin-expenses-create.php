@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             <div class="box-inn-sp admin-form">
                                 <div class="inn-title">
                                     <h4>Add Expense</h4>
-                                    <p>Use this form to log a new expense. You can also add a receipt or invoice file.</p>
+                                    <p>Capture the bill date, deduction period, vendor details, allocation, and supporting records in one refined workflow instead of a long plain form.</p>
                                 </div>
                                 <?php if ($success_msg): ?>
                                     <div class="card-panel green lighten-4 green-text text-darken-4"><?php echo htmlspecialchars($success_msg); ?></div>
@@ -192,7 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                                         <div class="row">
                                             <div class="col s12 m8">
-                                                <h5>Timing</h5>
+                                                <div style="margin-bottom: 12px;"><strong>Step 1</strong></div>
+                                                <h5>Schedule and deduction period</h5>
                                                 <p>Separate the actual expense date from the month and year used for deduction tracking.</p>
                                             </div>
                                         </div>
@@ -203,20 +204,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                                 <label for="expense_date" class="active">Expense date</label>
                                             </div>
                                             <div class="input-field col s12 m4">
-                                                <select name="deduction_month" required>
+                                                <select id="deduction_month" name="deduction_month" class="browser-default" required>
                                                     <?php foreach (["January","February","March","April","May","June","July","August","September","October","November","December"] as $month): ?>
                                                         <option value="<?php echo $month; ?>" <?php echo $deduction_month === $month ? 'selected' : ''; ?>><?php echo $month; ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
-                                                <label>Deduction month</label>
+                                                <label for="deduction_month">Deduction month</label>
                                             </div>
                                             <div class="input-field col s12 m4">
-                                                <select name="deduction_year" required>
-                                                    <?php for ($year = date('Y') - 3; $year <= date('Y') + 3; $year++): ?>
+                                                <select id="deduction_year" name="deduction_year" class="browser-default" required>
+                                                    <?php foreach ([2021,2022,2023,2024,2025,2026,2027,2028,2029,2030,2031] as $year): ?>
                                                         <option value="<?php echo $year; ?>" <?php echo $deduction_year == $year ? 'selected' : ''; ?>><?php echo $year; ?></option>
-                                                    <?php endfor; ?>
+                                                    <?php endforeach; ?>
                                                 </select>
-                                                <label>Deduction year</label>
+                                                <label for="deduction_year">Deduction year</label>
                                             </div>
                                         </div>
 
@@ -226,34 +227,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                                     <input type="checkbox" name="is_recurring" value="1" <?php echo $is_recurring ? 'checked' : ''; ?> />
                                                     <span>Auto-generate this expense</span>
                                                 </label>
+                                                <p style="margin-top: 6px; color: #666;">The expense date above becomes the first occurrence. Turn this on for bills that should keep generating automatically.</p>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="col s12 m8">
-                                                <h5>Allocation</h5>
+                                                <div style="margin-bottom: 12px;"><strong>Step 2</strong></div>
+                                                <h5>Vendor and property mapping</h5>
                                                 <p>Link the expense to a saved vendor, then place it against a property and unit when the cost belongs to a specific location.</p>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="input-field col s12 m6">
-                                                <select name="category" required>
+                                                <select id="category" name="category" class="browser-default" required>
                                                     <option value="" disabled <?php echo $category === '' ? 'selected' : ''; ?>>Select category</option>
                                                     <?php foreach ($categories as $categoryOption): ?>
                                                         <option value="<?php echo htmlspecialchars($categoryOption); ?>" <?php echo $category === $categoryOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($categoryOption); ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
-                                                <label>Category</label>
+                                                <label for="category">Category</label>
                                             </div>
                                             <div class="input-field col s12 m6">
-                                                <select name="vendor_id">
+                                                <select id="vendor_id" name="vendor_id" class="browser-default">
                                                     <option value="" <?php echo $vendor_id === '' ? 'selected' : ''; ?>>Not linked</option>
                                                     <?php foreach ($vendors as $vendor): ?>
                                                         <option value="<?php echo $vendor['id']; ?>" <?php echo $vendor_id == $vendor['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($vendor['name']); ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
-                                                <label>Saved vendor (optional)</label>
+                                                <label for="vendor_id">Saved Vendor (optional)</label>
                                                 <a href="admin-expense-vendors.php" class="waves-effect waves-light btn-flat" style="margin-top: 6px; display: inline-block;">Manage saved vendors</a>
                                             </div>
                                         </div>
@@ -264,20 +267,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                                 <label for="vendor_name" class="active">Vendor</label>
                                             </div>
                                             <div class="input-field col s12 m6">
-                                                <select id="property_id" name="property_id">
+                                                <select id="property_id" name="property_id" class="browser-default">
                                                     <option value="" <?php echo $property_id === '' ? 'selected' : ''; ?>>Not linked</option>
                                                     <?php foreach ($properties as $property): ?>
                                                         <option value="<?php echo $property['id']; ?>" <?php echo $property_id == $property['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($property['title']); ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
-                                                <label>Property (optional)</label>
+                                                <label for="property_id">Property (optional)</label>
                                                 <span class="helper-text">Leave blank for general expenses.</span>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="input-field col s12 m6">
-                                                <select id="unit_id" name="unit_id" <?php echo empty($property_id) ? 'disabled' : ''; ?>>
+                                                <select id="unit_id" name="unit_id" class="browser-default" <?php echo empty($property_id) ? 'disabled' : ''; ?>>
                                                     <option value="" <?php echo $unit_id === '' ? 'selected' : ''; ?>>Not linked</option>
                                                     <?php if (!empty($property_id) && !empty($units[$property_id])): ?>
                                                         <?php foreach ($units[$property_id] as $unit): ?>
@@ -285,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                                         <?php endforeach; ?>
                                                     <?php endif; ?>
                                                 </select>
-                                                <label>Unit (optional)</label>
+                                                <label for="unit_id">Unit (optional)</label>
                                                 <span class="helper-text">Select a property to load the matching units.</span>
                                             </div>
                                             <div class="input-field col s12 m6">
@@ -310,8 +313,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                         </div>
 
                                         <div class="row">
+                                            <div class="col s12">
+                                                <div style="margin-bottom: 12px;"><strong>Step 3</strong></div>
+                                                <h5>Amounts, notes, and attachment</h5>
+                                                <p>Finish the entry with bill values, any taxed amount, and the supporting note or file that explains the expense.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
                                             <div class="input-field col s12">
-                                                <textarea id="notes" name="notes" class="materialize-textarea"><?php echo htmlspecialchars($notes); ?></textarea>
+                                                <textarea id="notes" name="notes" class="materialize-textarea" placeholder="Optional operational note or tax explanation"><?php echo htmlspecialchars($notes); ?></textarea>
                                                 <label for="notes" class="active">Notes</label>
                                             </div>
                                         </div>
@@ -351,6 +362,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script>
         var unitOptionsByProperty = <?php echo json_encode($units); ?>;
 
+        function initializeSelects() {
+            var elems = document.querySelectorAll('select');
+            if (typeof M !== 'undefined' && M.FormSelect) {
+                M.FormSelect.init(elems);
+            } else if (window.jQuery && typeof jQuery.fn.material_select === 'function') {
+                jQuery(elems).material_select();
+            }
+        }
+
         function refreshUnitSelect() {
             var propertySelect = document.getElementById('property_id');
             var unitSelect = document.getElementById('unit_id');
@@ -366,18 +386,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 unitSelect.disabled = true;
             }
             unitSelect.innerHTML = optionsHtml;
-            M.FormSelect.init(unitSelect);
+            if (typeof M !== 'undefined' && M.FormSelect) {
+                M.FormSelect.init(unitSelect);
+            } else if (window.jQuery && typeof jQuery.fn.material_select === 'function') {
+                jQuery(unitSelect).material_select();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            var elems = document.querySelectorAll('select');
-            M.FormSelect.init(elems);
-            var propertySelect = document.getElementById('property_id');
-            propertySelect.addEventListener('change', function() {
+            setTimeout(function() {
+                initializeSelects();
+                var propertySelect = document.getElementById('property_id');
+                if (propertySelect) {
+                    propertySelect.addEventListener('change', function() {
+                        refreshUnitSelect();
+                    });
+                }
                 refreshUnitSelect();
-            });
-            refreshUnitSelect();
+            }, 100);
         });
+
+        // Fallback initialization after a delay
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeSelects);
+        } else {
+            setTimeout(initializeSelects, 500);
+        }
     </script>
+
+
 </body>
 </html>

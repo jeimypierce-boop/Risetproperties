@@ -59,38 +59,76 @@ if (empty($status_options)) {
     $status_options = $default_status_options;
 }
 
+$unit_rows = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $unit_name = trim($_POST['unit_name'] ?? '');
-    $unit_number = trim($_POST['unit_number'] ?? '');
-    $unit_type = trim($_POST['unit_type'] ?? '');
-    $monthly_rent = floatval($_POST['monthly_rent'] ?? 0);
-    $deposit = floatval($_POST['deposit'] ?? 0);
-    $currency = trim($_POST['currency'] ?? 'KES');
-    $availability_date = trim($_POST['availability_date'] ?? null);
-    $furnished = isset($_POST['furnished']) ? 1 : 0;
-    $parking = isset($_POST['parking']) ? 1 : 0;
-    $utilities_included = trim($_POST['utilities_included'] ?? '');
-    $tenant_id = !empty($_POST['tenant_id']) ? intval($_POST['tenant_id']) : null;
-    $status = trim($_POST['status'] ?? 'Available');
-    $description = trim($_POST['description'] ?? '');
-    $features = trim($_POST['features'] ?? '');
-    $amenities = trim($_POST['amenities'] ?? '');
-    $notes = trim($_POST['notes'] ?? '');
+    if (isset($_POST['unit_name']) && is_array($_POST['unit_name'])) {
+        $unit_names = $_POST['unit_name'];
+        $unit_numbers = $_POST['unit_number'] ?? [];
+        $unit_types = $_POST['unit_type'] ?? [];
+        $monthly_rents = $_POST['monthly_rent'] ?? [];
+        $deposits = $_POST['deposit'] ?? [];
+        $currencies = $_POST['currency'] ?? [];
+        $availability_dates = $_POST['availability_date'] ?? [];
+        $descriptions = $_POST['description'] ?? [];
 
-    // Validation
-    if (empty($unit_name)) $errors[] = 'Unit name is required';
-    if (empty($unit_number)) $errors[] = 'Unit number is required';
-    if ($monthly_rent <= 0) $errors[] = 'Monthly rent must be greater than 0';
+        foreach ($unit_names as $index => $name) {
+            $unit_name = trim($name);
+            $unit_number = trim($unit_numbers[$index] ?? '');
+            $unit_type = trim($unit_types[$index] ?? '');
+            $monthly_rent = floatval($monthly_rents[$index] ?? 0);
+            $deposit = floatval($deposits[$index] ?? 0);
+            $currency = trim($currencies[$index] ?? ($_POST['currency'] ?? 'KES')) ?: 'KES';
+            $availability_date = trim($availability_dates[$index] ?? '');
+            $description = trim($descriptions[$index] ?? '');
 
-    // Check if unit number already exists in this property
-    if (!empty($errors) === false) {
-        $check_stmt = $conn->prepare("SELECT id FROM units WHERE property_id = ? AND unit_number = ?");
-        $check_stmt->bind_param('is', $property_id, $unit_number);
-        $check_stmt->execute();
-        if ($check_stmt->get_result()->num_rows > 0) {
-            $errors[] = 'Unit number already exists in this property';
+            if ($unit_name === '' && $unit_number === '' && $monthly_rent <= 0) {
+                continue;
+            }
+
+            $unit_rows[] = [
+                'unit_name' => $unit_name,
+                'unit_number' => $unit_number,
+                'unit_type' => $unit_type,
+                'monthly_rent' => $monthly_rent,
+                'deposit' => $deposit,
+                'currency' => $currency,
+                'availability_date' => $availability_date,
+                'description' => $description,
+            ];
         }
-        $check_stmt->close();
+    } else {
+        $unit_rows[] = [
+            'unit_name' => trim($_POST['unit_name'] ?? ''),
+            'unit_number' => trim($_POST['unit_number'] ?? ''),
+            'unit_type' => trim($_POST['unit_type'] ?? ''),
+            'monthly_rent' => floatval($_POST['monthly_rent'] ?? 0),
+            'deposit' => floatval($_POST['deposit'] ?? 0),
+            'currency' => trim($_POST['currency'] ?? 'KES') ?: 'KES',
+            'availability_date' => trim($_POST['availability_date'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+        ];
+    }
+
+    if (empty($unit_rows)) {
+        $errors[] = 'At least one unit row with a name and rent is required.';
+    }
+
+    foreach ($unit_rows as $row_index => $row) {
+        if (empty($row['unit_name'])) {
+            $errors[] = 'Unit name is required for row ' . ($row_index + 1);
+        }
+        if ($row['monthly_rent'] <= 0) {
+            $errors[] = 'Monthly rent must be greater than 0 for row ' . ($row_index + 1);
+        }
+        if ($row['unit_number'] !== '') {
+            $check_stmt = $conn->prepare("SELECT id FROM units WHERE property_id = ? AND unit_number = ?");
+            $check_stmt->bind_param('is', $property_id, $row['unit_number']);
+            $check_stmt->execute();
+            if ($check_stmt->get_result()->num_rows > 0) {
+                $errors[] = 'Unit number "' . htmlspecialchars($row['unit_number'], ENT_QUOTES) . '" already exists in this property';
+            }
+            $check_stmt->close();
+        }
     }
 
     if (empty($errors)) {
@@ -100,62 +138,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
         );
 
-        $insert_stmt->bind_param(
-            'isssddsssssssiisi',
-            $property_id,
-            $unit_name,
-            $unit_number,
-            $unit_type,
-            $monthly_rent,
-            $deposit,
-            $currency,
-            $status,
-            $description,
-            $features,
-            $amenities,
-            $notes,
-            $availability_date,
-            $furnished,
-            $parking,
-            $utilities_included,
-            $tenant_id
-        );
+        foreach ($unit_rows as $row) {
+            $status = 'Available';
+            $features = '';
+            $amenities = '';
+            $notes = '';
+            $availability_date = $row['availability_date'];
+            $furnished = 0;
+            $parking = 0;
+            $utilities_included = '';
+            $tenant_id = null;
 
-        if ($insert_stmt->execute()) {
-            $new_unit_id = $insert_stmt->insert_id;
-            // handle image uploads
-            if (!empty($_FILES['images']) && is_array($_FILES['images']['name'])) {
-                $uploadDir = __DIR__ . '/uploads/units/' . $property_id;
-                if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-                for ($i = 0; $i < count($_FILES['images']['name']); $i++) {
-                    $tmp = $_FILES['images']['tmp_name'][$i];
-                    $name = basename($_FILES['images']['name'][$i]);
-                    if ($tmp && is_uploaded_file($tmp)) {
-                        $target = $uploadDir . '/' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $name);
-                        if (move_uploaded_file($tmp, $target)) {
-                            $rel = 'uploads/units/' . $property_id . '/' . basename($target);
-                            $img_stmt = $conn->prepare("INSERT INTO unit_images (unit_id, image_path, created_at) VALUES (?, ?, NOW())");
-                            $img_stmt->bind_param('is', $new_unit_id, $rel);
-                            $img_stmt->execute();
-                            $img_stmt->close();
-                        }
-                    }
-                }
+            $insert_stmt->bind_param(
+                'isssddsssssssiisi',
+                $property_id,
+                $row['unit_name'],
+                $row['unit_number'],
+                $row['unit_type'],
+                $row['monthly_rent'],
+                $row['deposit'],
+                $row['currency'],
+                $status,
+                $row['description'],
+                $features,
+                $amenities,
+                $notes,
+                $availability_date,
+                $furnished,
+                $parking,
+                $utilities_included,
+                $tenant_id
+            );
+
+            if (!$insert_stmt->execute()) {
+                $errors[] = 'Error adding unit "' . htmlspecialchars($row['unit_name'], ENT_QUOTES) . '": ' . $insert_stmt->error;
+                break;
             }
-
-            $success = 'Unit added successfully!';
-            header("refresh:1;url=admin-units.php?property_id=$property_id");
-        } else {
-            $errors[] = 'Error adding unit: ' . $insert_stmt->error;
         }
+
         $insert_stmt->close();
+
+        if (empty($errors)) {
+            $success = count($unit_rows) . ' unit' . (count($unit_rows) === 1 ? '' : 's') . ' added successfully!';
+            header("refresh:1;url=admin-units.php?property_id=$property_id");
+        }
     }
+}
+
+if (empty($unit_rows)) {
+    $unit_rows[] = [
+        'unit_name' => '',
+        'unit_number' => '',
+        'unit_type' => '',
+        'monthly_rent' => 0,
+        'deposit' => 0,
+        'currency' => 'KES',
+        'availability_date' => '',
+        'description' => '',
+    ];
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Add Unit - Riset Property Management</title>
+    <title>Add units - Riset Property Management</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="images/fav.ico" type="image/x-icon">
@@ -242,6 +288,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #f0f0f0;
             color: #333;
         }
+        .unit-rows-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .unit-rows-table th,
+        .unit-rows-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            vertical-align: middle;
+            text-align: left;
+        }
+        .unit-rows-table th {
+            background: #f7f7f7;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .unit-rows-table input,
+        .unit-rows-table select {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+        }
+        .floor-cell {
+            min-width: 90px;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .checkbox-cell {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .btn-remove-row {
+            background: #f44336;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-remove-row:hover {
+            background: #d32f2f;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .hint {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
         .alert {
             padding: 15px;
             border-radius: 4px;
@@ -312,7 +412,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <li><a href="admin-dashboard-modern.php"><i class="fa fa-home" aria-hidden="true"></i> Home</a></li>
                         <li><a href="admin-properties.php">Properties</a></li>
                         <li><a href="admin-units.php?property_id=<?php echo $property_id; ?>">Units</a></li>
-                        <li class="active-bre"><a href="#">Add Unit</a></li>
+                        <li class="active-bre"><a href="#">Add units</a></li>
                     </ul>
                 </div>
 
@@ -336,175 +436,110 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php endif; ?>
 
                             <form method="POST" class="admin-form" enctype="multipart/form-data">
-                                <!-- Basic Information -->
                                 <div class="form-section">
                                     <div class="form-section-title">
-                                        <i class="fa fa-info-circle"></i> Basic Information
+                                        <i class="fa fa-th-large"></i> Add multiple units at once
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label for="unit_name">Unit Name <span class="required">*</span></label>
-                                            <input type="text" id="unit_name" name="unit_name" required 
-                                                   value="<?php echo htmlspecialchars($_POST['unit_name'] ?? ''); ?>"
-                                                   placeholder="e.g., Unit A, Studio 101">
+                                            <label>Property</label>
+                                            <input type="text" readonly value="<?php echo htmlspecialchars($property['title']); ?>">
                                         </div>
-                                        <div class="form-group">
-                                            <label for="unit_number">Unit Number <span class="required">*</span></label>
-                                            <input type="text" id="unit_number" name="unit_number" required 
-                                                   value="<?php echo htmlspecialchars($_POST['unit_number'] ?? ''); ?>"
-                                                   placeholder="e.g., A101, TH201">
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="unit_type">Unit Type</label>
-                                            <select id="unit_type" name="unit_type">
-                                                <option value="">Select type</option>
-                                                <?php foreach ($unit_type_options as $unitType): ?>
-                                                    <option value="<?php echo htmlspecialchars($unitType); ?>" <?php echo (($_POST['unit_type'] ?? '') === $unitType) ? 'selected' : ''; ?>><?php echo htmlspecialchars($unitType); ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="status">Status</label>
-                                            <select id="status" name="status">
-                                                <?php foreach ($status_options as $statusOption): ?>
-                                                    <option value="<?php echo htmlspecialchars($statusOption); ?>" <?php echo (($_POST['status'] ?? 'Available') === $statusOption) ? 'selected' : ''; ?>><?php echo htmlspecialchars($statusOption); ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="description">Description</label>
-                                            <textarea id="description" name="description" 
-                                                      placeholder="Describe the unit, features, etc..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Unit Details -->
-                                <div class="form-section">
-                                    <div class="form-section-title">
-                                        <i class="fa fa-th"></i> Unit Details
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="bedrooms">Bedrooms</label>
-                                            <input type="number" id="bedrooms" name="bedrooms" min="0" 
-                                                   value="<?php echo $_POST['bedrooms'] ?? 0; ?>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="bathrooms">Bathrooms</label>
-                                            <input type="number" id="bathrooms" name="bathrooms" min="0" 
-                                                   value="<?php echo $_POST['bathrooms'] ?? 0; ?>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="square_feet">Square Feet</label>
-                                            <input type="number" id="square_feet" name="square_feet" min="0" 
-                                                   value="<?php echo $_POST['square_feet'] ?? 0; ?>"
-                                                   placeholder="Total area in sq ft">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Pricing -->
-                                <div class="form-section">
-                                    <div class="form-section-title">
-                                        <i class="fa fa-money"></i> Pricing
-                                    </div>
-                                    <div class="form-row">
                                         <div class="form-group">
                                             <label for="currency">Currency</label>
-                                            <select id="currency" name="currency">
-                                                <option value="KES" <?php echo (($_POST['currency'] ?? 'KES') === 'KES') ? 'selected' : ''; ?>>KES</option>
-                                                <option value="USD" <?php echo (($_POST['currency'] ?? '') === 'USD') ? 'selected' : ''; ?>>USD</option>
+                                            <?php $currency = $unit_rows[0]['currency'] ?? 'KES'; ?>
+                                            <select id="currency" name="currency" class="browser-default">
+                                                <option value="KES" <?php echo ($currency === 'KES') ? 'selected' : ''; ?>>KES</option>
+                                                <option value="USD" <?php echo ($currency === 'USD') ? 'selected' : ''; ?>>USD</option>
                                             </select>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="availability_date">Availability Date</label>
-                                            <input type="date" id="availability_date" name="availability_date" value="<?php echo htmlspecialchars($_POST['availability_date'] ?? ''); ?>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="furnished">Furnished</label>
-                                            <div style="padding-top:8px;"><input type="checkbox" id="furnished" name="furnished" <?php echo isset($_POST['furnished']) ? 'checked' : ''; ?>> Yes</div>
-                                        </div>
                                     </div>
                                     <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="monthly_rent">Monthly Rent <span class="required">*</span></label>
-                                            <input type="number" id="monthly_rent" name="monthly_rent" step="0.01" required 
-                                                   value="<?php echo $_POST['monthly_rent'] ?? 0; ?>"
-                                                   placeholder="Enter monthly rent in KES">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="deposit">Deposit Amount</label>
-                                            <input type="number" id="deposit" name="deposit" step="0.01" 
-                                                   value="<?php echo $_POST['deposit'] ?? 0; ?>"
-                                                   placeholder="Security deposit amount">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="parking">Parking</label>
-                                            <div style="padding-top:8px;"><input type="checkbox" id="parking" name="parking" <?php echo isset($_POST['parking']) ? 'checked' : ''; ?>> Has parking</div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="utilities_included">Utilities Included</label>
-                                            <input type="text" id="utilities_included" name="utilities_included" value="<?php echo htmlspecialchars($_POST['utilities_included'] ?? ''); ?>" placeholder="e.g., water, electricity">
+                                        <div class="form-group" style="grid-column: 1 / -1;">
+                                            <label>Units will be added to Floor 1.</label>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Additional Information -->
-                                <div class="form-section">
-                                    <div class="form-section-title">
-                                        <i class="fa fa-list"></i> Additional Information
+                                    <div class="table-responsive">
+                                        <table class="unit-rows-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Unit name</th>
+                                                    <th>Floor</th>
+                                                    <th>Type</th>
+                                                    <th>Amount (KES)</th>
+                                                    <th>Deposit</th>
+                                                    <th>Public</th>
+                                                    <th>Remove</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="unitRows">
+                                                <?php foreach ($unit_rows as $row): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <input type="text" name="unit_name[]" value="<?php echo htmlspecialchars($row['unit_name']); ?>" placeholder="Unit name">
+                                                        </td>
+                                                        <td class="floor-cell">Floor 1</td>
+                                                        <td>
+                                                            <select name="unit_type[]" class="browser-default">
+                                                                <option value="">Select type</option>
+                                                                <?php foreach ($unit_type_options as $unitType): ?>
+                                                                    <option value="<?php echo htmlspecialchars($unitType); ?>" <?php echo (($row['unit_type'] ?? '') === $unitType) ? 'selected' : ''; ?>><?php echo htmlspecialchars($unitType); ?></option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" name="monthly_rent[]" step="0.01" min="0" value="<?php echo htmlspecialchars($row['monthly_rent']); ?>" placeholder="0">
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" name="deposit[]" step="0.01" min="0" value="<?php echo htmlspecialchars($row['deposit']); ?>" placeholder="0">
+                                                        </td>
+                                                        <td>
+                                                            <label class="checkbox-cell"><input type="checkbox" disabled checked><span>Listed</span></label>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-remove-row">Remove row</button>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                        <template id="unitRowTemplate">
+                                            <tr>
+                                                <td>
+                                                    <input type="text" name="unit_name[]" value="" placeholder="Unit name">
+                                                </td>
+                                                <td class="floor-cell">Floor 1</td>
+                                                <td>
+                                                    <select name="unit_type[]" class="browser-default">
+                                                        <option value="">Select type</option>
+                                                        <?php foreach ($unit_type_options as $unitType): ?>
+                                                            <option value="<?php echo htmlspecialchars($unitType); ?>"><?php echo htmlspecialchars($unitType); ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="monthly_rent[]" step="0.01" min="0" value="0" placeholder="0">
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="deposit[]" step="0.01" min="0" value="0" placeholder="0">
+                                                </td>
+                                                <td>
+                                                    <label class="checkbox-cell"><input type="checkbox" disabled checked><span>Listed</span></label>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-remove-row">Remove row</button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <button type="button" id="addRowBtn" class="btn btn-primary">Add row</button>
                                     </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="features">Features</label>
-                                            <textarea id="features" name="features" 
-                                                      placeholder="e.g., Built-in wardrobes, ceiling fans, modern kitchen..."><?php echo htmlspecialchars($_POST['features'] ?? ''); ?></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="tenant_id">Assign Tenant (optional)</label>
-                                            <select id="tenant_id" name="tenant_id">
-                                                <option value="">-- None --</option>
-                                                <?php
-                                                $tenantQuery = "SELECT DISTINCT t.id, t.first_name, t.last_name, t.email FROM tenants t JOIN leases l ON t.id = l.tenant_id WHERE l.property_id = " . intval($property_id) . " ORDER BY t.first_name";
-                                                $tres = $conn->query($tenantQuery);
-                                                while ($t = $tres->fetch_assoc()):
-                                                ?>
-                                                    <option value="<?php echo $t['id']; ?>" <?php echo (($_POST['tenant_id'] ?? '') == $t['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($t['first_name'] . ' ' . $t['last_name'] . ' (' . $t['email'] . ')'); ?></option>
-                                                <?php endwhile; ?>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="images">Upload Images</label>
-                                            <input type="file" id="images" name="images[]" multiple accept="image/*">
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="amenities">Amenities</label>
-                                            <textarea id="amenities" name="amenities" 
-                                                      placeholder="e.g., Swimming pool, gym, parking..."><?php echo htmlspecialchars($_POST['amenities'] ?? ''); ?></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="notes">Notes</label>
-                                            <textarea id="notes" name="notes" 
-                                                      placeholder="Any additional notes..."><?php echo htmlspecialchars($_POST['notes'] ?? ''); ?></textarea>
-                                        </div>
-                                    </div>
+                                    <p class="hint">Amounts set the default lease amount; deposit defaults to 0. Public listings are disabled during the trial period.</p>
                                 </div>
 
                                 <!-- Action Buttons -->
                                 <div class="btn-group">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="fa fa-save"></i> Add Unit
+                                        <i class="fa fa-save"></i> Save units
                                     </button>
                                     <a href="admin-units.php?property_id=<?php echo $property_id; ?>" class="btn btn-secondary">
                                         <i class="fa fa-arrow-left"></i> Back to Units
@@ -522,6 +557,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="js/materialize.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var unitRows = document.getElementById('unitRows');
+            var addRowBtn = document.getElementById('addRowBtn');
+            var rowTemplate = document.getElementById('unitRowTemplate');
+
+            function attachRemove(row) {
+                var button = row.querySelector('.btn-remove-row');
+                if (!button) return;
+                button.addEventListener('click', function () {
+                    if (unitRows.children.length > 1) {
+                        row.remove();
+                    } else {
+                        row.querySelectorAll('input[type="text"], input[type="number"]').forEach(function (input) {
+                            input.value = '';
+                        });
+                        var select = row.querySelector('select[name="unit_type[]"]');
+                        if (select) select.selectedIndex = 0;
+                    }
+                });
+            }
+
+            Array.from(unitRows.querySelectorAll('tr')).forEach(function (row) {
+                attachRemove(row);
+            });
+
+            if (addRowBtn && rowTemplate) {
+                addRowBtn.addEventListener('click', function () {
+                    var clone = rowTemplate.content.firstElementChild.cloneNode(true);
+                    attachRemove(clone);
+                    unitRows.appendChild(clone);
+                });
+            }
+        });
+    </script>
 </body>
 </html>
 <?php $conn->close(); ?>

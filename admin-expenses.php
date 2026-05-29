@@ -12,6 +12,7 @@ $error_msg = '';
 $categories = get_expense_categories();
 $vendors = get_expense_vendors($conn);
 $properties = get_expense_properties($conn, $landlord_id);
+$units = get_expense_units($conn, $landlord_id);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_expense') {
     $expense_date = $_POST['expense_date'] ?? date('Y-m-d');
@@ -70,6 +71,7 @@ $filters = [
     'vendor_name' => trim($_GET['vendor_name'] ?? ''),
     'vendor_id' => $_GET['vendor_id'] ?? '',
     'property_id' => $_GET['property_id'] ?? '',
+    'unit_id' => $_GET['unit_id'] ?? '',
     'reference' => trim($_GET['reference'] ?? ''),
     'start_date' => $_GET['start_date'] ?? '',
     'end_date' => $_GET['end_date'] ?? '',
@@ -192,7 +194,7 @@ $summary = get_expense_summary($conn, $landlord_id);
                         <h4>Filters</h4>
                         <form method="get" class="filter-row">
                             <div class="row">
-                                <div class="input-field col s12 m4">
+                                <div class="input-field col s12 m3">
                                     <select name="category">
                                         <option value="">All categories</option>
                                         <?php foreach ($categories as $categoryOption): ?>
@@ -201,16 +203,16 @@ $summary = get_expense_summary($conn, $landlord_id);
                                     </select>
                                     <label>Category</label>
                                 </div>
-                                <div class="input-field col s12 m4">
+                                <div class="input-field col s12 m3">
                                     <select name="vendor_id">
                                         <option value="">All vendors</option>
                                         <?php foreach ($vendors as $vendor): ?>
                                             <option value="<?php echo $vendor['id']; ?>" <?php echo $filters['vendor_id'] == $vendor['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($vendor['name']); ?></option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <label>Saved vendor</label>
+                                    <label>Saved Vendor</label>
                                 </div>
-                                <div class="input-field col s12 m4">
+                                <div class="input-field col s12 m3">
                                     <select name="property_id">
                                         <option value="">All properties</option>
                                         <?php foreach ($properties as $property): ?>
@@ -218,6 +220,17 @@ $summary = get_expense_summary($conn, $landlord_id);
                                         <?php endforeach; ?>
                                     </select>
                                     <label>Property</label>
+                                </div>
+                                <div class="input-field col s12 m3">
+                                    <select name="unit_id">
+                                        <option value="">All units</option>
+                                        <?php foreach ($units as $propertyUnits): ?>
+                                            <?php foreach ($propertyUnits as $unit): ?>
+                                                <option value="<?php echo $unit['id']; ?>" <?php echo $filters['unit_id'] == $unit['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($unit['label']); ?></option>
+                                            <?php endforeach; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <label>Unit</label>
                                 </div>
                             </div>
                             <div class="row">

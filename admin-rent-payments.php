@@ -7,11 +7,11 @@ $landlord_id = get_landlord_id();
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] == 'record_payment') {
         $tenant_id = intval($_POST['tenant_id']);
-        $lease_id = intval($_POST['lease_id']);
+        $lease_id = isset($_POST['lease_id']) ? intval($_POST['lease_id']) : 0;
         $property_id = null;
         $amount_paid = floatval($_POST['amount_paid']);
         $payment_date = $_POST['payment_date'];
-        $payment_method = $_POST['payment_method'];
+        $payment_method = $_POST['payment_method'] ?? 'manual';
         $transaction_id = $_POST['transaction_id'] ?? '';
         $reference = $_POST['reference'] ?? '';
         $status = $_POST['status'] ?? 'paid';
@@ -24,6 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                     $tenant_id = intval($leaseRow['tenant_id']);
                 }
                 $property_id = intval($leaseRow['property_id']);
+            }
+        } elseif (!empty($tenant_id)) {
+            $tenantLease = $conn->query("SELECT property_id FROM leases WHERE tenant_id = " . intval($tenant_id) . " AND status = 'Active' ORDER BY lease_end_date DESC LIMIT 1");
+            if ($tenantLease && $tenantLease->num_rows > 0) {
+                $property_id = intval($tenantLease->fetch_assoc()['property_id']);
             }
         }
 
@@ -208,6 +213,73 @@ $user_role_label = get_user_role_label();
             .payment-table tbody tr td[data-label="Status"] { text-align: left; }
             .payment-table tbody tr td[data-label="Reference"] { word-break: break-word; }
         }
+        @media (max-width: 767px) {
+            .modal {
+                position: fixed !important;
+                top: 80px !important;
+                left: 0;
+                right: 0;
+                z-index: 3000 !important;
+                overflow: auto;
+            }
+            .modal-backdrop {
+                z-index: 1040 !important;
+                pointer-events: none !important;
+            }
+            .modal-backdrop.show {
+                opacity: 0.5;
+            }
+            .modal-dialog {
+                max-width: calc(100% - 20px) !important;
+                margin: 0 auto 20px auto !important;
+                padding-top: 20px;
+                position: relative;
+                z-index: 3001 !important;
+            }
+            .modal-content {
+                border-radius: 10px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            }
+            .modal-header,
+            .modal-footer {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+            .modal-body {
+                max-height: none !important;
+                overflow: visible !important;
+                padding: 15px;
+            }
+            .modal-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .modal-footer .btn {
+                width: 100%;
+            }
+            .modal-body .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            .modal-body .col-md-6 {
+                width: 100%;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .modal-body .form-group {
+                margin-bottom: 15px;
+            }
+            .modal-body label {
+                display: block;
+                margin-bottom: 6px;
+                font-weight: 600;
+            }
+            .modal-body .form-control,
+            .modal-body .browser-default {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -372,6 +444,7 @@ $user_role_label = get_user_role_label();
                     </div>
                     <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                         <input type="hidden" name="action" value="record_payment">
+                        <input type="hidden" name="status" value="paid">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -388,9 +461,9 @@ $user_role_label = get_user_role_label();
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Lease *</label>
-                                    <select name="lease_id" class="form-control browser-default" required>
-                                        <option value="">Select Lease</option>
+                                    <label>Invoice (optional)</label>
+                                    <select name="lease_id" class="form-control browser-default">
+                                        <option value="0">Advance / unallocated rent payment</option>
                                         <?php 
                                         $lease_filter = $landlord_id ? " AND p.landlord_id = " . intval($landlord_id) : "";
                                         $leases = $conn->query("SELECT l.id, l.tenant_id, l.monthly_rent, t.first_name, t.last_name, p.title AS property_title FROM leases l LEFT JOIN tenants t ON l.tenant_id = t.id LEFT JOIN properties p ON l.property_id = p.id WHERE l.status = 'Active'" . $lease_filter);
@@ -398,66 +471,60 @@ $user_role_label = get_user_role_label();
                                         <option value="<?php echo $l['id']; ?>" data-tenant-id="<?php echo $l['tenant_id']; ?>"><?php echo htmlspecialchars($l['first_name'] . ' ' . $l['last_name'] . ' - ' . $l['property_title'] . ' (KES ' . number_format($l['monthly_rent'], 2) . ')'); ?></option>
                                         <?php endwhile; ?>
                                     </select>
+                                    <small class="text-muted">Select an outstanding invoice if you want the payment to update lease balances immediately.</small>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Amount Paid (KES) *</label>
-                                    <input type="number" name="amount_paid" class="form-control" step="100" min="0" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Payment Date *</label>
+                                    <label>Date *</label>
                                     <input type="date" name="payment_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Amount *</label>
+                                    <input type="number" name="amount_paid" class="form-control" step="100" min="0" required>
+                                </div>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Payment Method *</label>
-                                    <select name="payment_method" class="form-control browser-default" required>
-                                        <option value="">-- Select Method --</option>
-                                        <option value="mpesa">M-PESA</option>
-                                        <option value="bank_transfer">Bank Transfer</option>
-                                        <option value="cash">Cash</option>
-                                        <option value="cheque">Cheque</option>
+                                    <label>Bank (optional)</label>
+                                    <select name="payment_method" class="form-control browser-default">
+                                        <option value="">Select bank</option>
+                                        <option value="equity_bank">Equity Bank</option>
+                                        <option value="kcb">KCB Bank</option>
+                                        <option value="ncba">NCBA Bank</option>
+                                        <option value="cooperative_bank">Co-operative Bank</option>
+                                        <option value="absa">Absa Bank</option>
+                                        <option value="stanbic">Stanbic Bank</option>
+                                        <option value="standard_chartered">Standard Chartered</option>
                                         <option value="other">Other</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Status</label>
-                                    <select name="status" class="form-control browser-default">
-                                        <option value="paid">Paid</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="partial">Partial</option>
-                                    </select>
+                                    <label>Confirmation code (optional)</label>
+                                    <input type="text" name="transaction_id" class="form-control" placeholder="e.g., MPESA12345">
                                 </div>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-group">
-                                    <label>Transaction ID</label>
-                                    <input type="text" name="transaction_id" class="form-control" placeholder="e.g., SJ5211XXXX">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Reference / Notes</label>
-                                    <input type="text" name="reference" class="form-control" placeholder="e.g., M-PESA/Cheque #">
+                                    <label>Narration (optional)</label>
+                                    <input type="text" name="reference" class="form-control" placeholder="Payment notes or narration">
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Record Payment</button>
+                        <button type="submit" class="btn btn-primary">Save Payment</button>
                     </div>
                 </form>
             </div>

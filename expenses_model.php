@@ -54,13 +54,39 @@ function ensure_expense_tables($conn) {
 
 function get_expense_categories() {
     return [
-        'Utilities', 'Utilities (Paid for Tenant)', 'Electricity', 'Water', 'Gas', 'Internet', 'Telephone',
-        'Waste Collection', 'Cleaning', 'Security', 'Repairs', 'Maintenance', 'Plumbing', 'Electrical Repairs',
-        'HVAC', 'Painting', 'Landscaping', 'Pest Control', 'Service Charge', 'Rates & Taxes', 'Insurance',
-        'Licenses & Permits', 'Bank Charges', 'Professional Fees', 'Legal', 'Legal Fees', 'Accounting',
-        'Audit', 'Staff', 'Salaries & Wages', 'Casual Labor', 'Transport', 'Fuel', 'Marketing', 'Advertising',
-        'Office Supplies', 'Stationery', 'Software & Subscriptions', 'Equipment', 'Furniture', 'Contractor Fees',
-        'Commission', 'Training', 'Travel', 'Hospitality', 'Depreciation', 'Miscellaneous'
+        'Utilities',
+        'Utilities (Paid for Tenant)',
+        'Electricity',
+        'Water',
+        'Gas',
+        'Internet',
+        'Telephone',
+        'Waste Collection',
+        'Cleaning',
+        'Security',
+        'Repairs',
+        'Maintenance',
+        'Plumbing',
+        'Electrical Repairs',
+        'HVAC',
+        'Painting',
+        'Landscaping',
+        'Pest Control',
+        'Fuel',
+        'Marketing',
+        'Advertising',
+        'Office Supplies',
+        'Stationery',
+        'Software & Subscriptions',
+        'Equipment',
+        'Furniture',
+        'Contractor Fees',
+        'Commission',
+        'Training',
+        'Travel',
+        'Hospitality',
+        'Depreciation',
+        'Miscellaneous'
     ];
 }
 
@@ -213,6 +239,11 @@ function get_expenses($conn, $filters = [], $landlord_id = null) {
         $where[] = "e.property_id = ?";
         $types .= 'i';
         $params[] = intval($filters['property_id']);
+    }
+    if (!empty($filters['unit_id'])) {
+        $where[] = "e.unit_id = ?";
+        $types .= 'i';
+        $params[] = intval($filters['unit_id']);
     }
     if (!empty($filters['reference'])) {
         $where[] = "e.reference LIKE ?";

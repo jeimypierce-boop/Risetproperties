@@ -11,7 +11,13 @@ if ($landlord_id) {
     $filters[] = "p.landlord_id = " . intval($landlord_id);
 }
 if ($statusFilter) {
-    $filters[] = "p.status = '" . $conn->real_escape_string($statusFilter) . "'";
+    $allowedUnitStatuses = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
+    $escapedStatus = $conn->real_escape_string($statusFilter);
+    if (in_array($statusFilter, $allowedUnitStatuses, true)) {
+        $filters[] = "EXISTS (SELECT 1 FROM units u WHERE u.property_id = p.id AND u.status = '" . $escapedStatus . "')";
+    } else {
+        $filters[] = "p.status = '" . $escapedStatus . "'";
+    }
 }
 if ($searchQuery) {
     $escapedSearch = $conn->real_escape_string($searchQuery);
@@ -19,13 +25,18 @@ if ($searchQuery) {
 }
 $whereClause = $filters ? ' WHERE ' . implode(' AND ', $filters) : '';
 
-// Fetch properties with occupancy data
-$sql = "SELECT p.*, (CASE WHEN p.unit_count IS NOT NULL AND p.unit_count > 0 THEN p.unit_count ELSE GREATEST(IFNULL(t.occupied_units, 0), 1) END) AS total_units, IFNULL(t.occupied_units, 0) AS occupied_units
+// Fetch properties with occupancy data from units
+$sql = "SELECT p.*, 
+    IFNULL(t.total_units, 0) AS total_units,
+    IFNULL(t.occupied_units, 0) AS occupied_units,
+    IFNULL(t.vacant_units, 0) AS vacant_units
 FROM properties p
 LEFT JOIN (
     SELECT property_id,
-        SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) AS occupied_units
-    FROM leases
+        COUNT(*) AS total_units,
+        SUM(CASE WHEN status = 'Occupied' THEN 1 ELSE 0 END) AS occupied_units,
+        SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) AS vacant_units
+    FROM units
     GROUP BY property_id
 ) t ON p.id = t.property_id" . $whereClause . " ORDER BY p.created_at DESC";
 $result = $conn->query($sql);
@@ -34,9 +45,9 @@ if ($result === false) {
     die('Database query error: ' . $conn->error);
 }
 
-$baseWhere = $landlord_id ? ' WHERE landlord_id = ' . intval($landlord_id) : '';
-$totalOccupied = $conn->query("SELECT COUNT(*) as count FROM properties" . $baseWhere . ($baseWhere ? " AND " : " WHERE ") . "status = 'Occupied'")->fetch_assoc()['count'];
-$totalVacant = $conn->query("SELECT COUNT(*) as count FROM properties" . $baseWhere . ($baseWhere ? " AND " : " WHERE ") . "status = 'Available'")->fetch_assoc()['count'];
+$baseWhere = $landlord_id ? ' WHERE p.landlord_id = ' . intval($landlord_id) : '';
+$totalOccupied = $conn->query("SELECT COUNT(DISTINCT p.id) as count FROM properties p JOIN units u ON u.property_id = p.id AND u.status = 'Occupied'" . $baseWhere)->fetch_assoc()['count'];
+$totalVacant = $conn->query("SELECT COUNT(DISTINCT p.id) as count FROM properties p JOIN units u ON u.property_id = p.id AND u.status = 'Available'" . $baseWhere)->fetch_assoc()['count'];
 $totalProperties = $conn->query("SELECT COUNT(*) as count FROM properties" . $baseWhere)->fetch_assoc()['count'];
 ?>
 <!DOCTYPE html>
@@ -252,14 +263,14 @@ $totalProperties = $conn->query("SELECT COUNT(*) as count FROM properties" . $ba
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
-                        <a href="admin-properties.php?status=Occupied" class="btn btn-secondary" style="flex: 1; min-width: 180px; justify-content: space-between; padding: 16px; display: inline-flex; align-items: center;">
+                        <a href="admin-properties.php?status=Occupied" class="btn btn-secondary metrics-card" style="flex: 1; min-width: 180px; justify-content: space-between; padding: 16px; display: inline-flex; align-items: center;">
                             <div>
                                 <div style="font-size: 12px; color: #777; text-transform: uppercase;">Total occupied</div>
                                 <div style="font-size: 22px; font-weight: 700;"><?php echo intval($totalOccupied); ?></div>
                             </div>
                             <span style="background: #eef7ff; color: #1d4ed8; padding: 6px 10px; border-radius: 20px; font-size: 12px;">Filter</span>
                         </a>
-                        <a href="admin-properties.php?status=Available" class="btn btn-secondary" style="flex: 1; min-width: 180px; justify-content: space-between; padding: 16px; display: inline-flex; align-items: center;">
+                        <a href="admin-properties.php?status=Available" class="btn btn-secondary metrics-card" style="flex: 1; min-width: 180px; justify-content: space-between; padding: 16px; display: inline-flex; align-items: center;">
                             <div>
                                 <div style="font-size: 12px; color: #777; text-transform: uppercase;">Total vacant</div>
                                 <div style="font-size: 22px; font-weight: 700;"><?php echo intval($totalVacant); ?></div>
