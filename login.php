@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Login page for both tenants and admin users
 // Connect to database
 require_once 'dbconnect.php';
@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
 <html lang="en">
 
 <head>
-    <title>Property Management System - Login</title>
+    <title>Property Management System - Sign In</title>
     <!-- META TAGS -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -197,9 +197,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
                 </div>
                 <div class="ad-log-in-con">
                     <div class="log-in-pop-right">
-                        <h4>Login to Your Account</h4>
+                        <h4>Sign in</h4>
                         
                         <?php if ($tenant_login_notice): ?>
+                            <p style="margin-top: 10px; font-size: 14px; color: #555;">Tenant portal users: sign in with your tenant ID, email, phone or username.</p>
                             <div class="alert alert-info alert-dismissible fade in" role="alert">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -219,8 +220,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
                         <form method="POST" action="" class="s12">
                             <div>
                                 <div class="input-field s12">
-                                    <input type="text" name="username" class="validate" placeholder="Tenant ID / Username / Email / Phone" required>
-                                    <label class="">Tenant ID, Username, Email or Phone</label>
+                                    <input type="text" name="username" class="validate" placeholder="Email or Phone" required>
+                                    <label class="">Email or Phone</label>
                                 </div>
                             </div>
 
@@ -242,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
 
                             <div>
                                 <div class="input-field s4">
-                                    <button type="submit" name="login_submit" class="waves-effect waves-light btn" style="width: 100%;">Login</button>
+                                    <button type="submit" name="login_submit" class="waves-effect waves-light btn" style="width: 100%;">Sign in</button>
                                 </div>
                             </div>
 
@@ -268,12 +269,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
 
     <!--Import jQuery before materialize.js-->
     <script src="js/main.min.js"></script>
-    <script src="js/materialize.min.js"></script>`r`n    <script src="js/bootstrap.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
 
 </body>
 
 </html>
+
 
 
 

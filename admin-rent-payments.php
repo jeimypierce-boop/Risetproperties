@@ -608,7 +608,8 @@ $user_role_label = get_user_role_label();
     </div>
 
     <script src="js/main.min.js"></script>
-    <script src="js/materialize.min.js"></script>`r`n    <script src="js/bootstrap.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -750,6 +751,7 @@ $user_role_label = get_user_role_label();
 </body>
 </html>
 <?php $conn->close(); ?>
+
 
 
 

@@ -380,7 +380,7 @@ $stats['read'] = $conn->query("SELECT COUNT(*) as count FROM communications WHER
                             <div class="form-row full">
                                 <div>
                                     <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px;">Template parameters (optional)</label>
-                                    <input type="text" class="form-control" placeholder='{"name":"John","order":"#12345"}' id="templateParams">
+                                    <input type="text" name="template_params" class="form-control" placeholder='{"name":"John","order":"#12345"}' id="templateParams">
                                     <small style="color: #999;">JSON format: {"key":"value"}</small>
                                 </div>
                             </div>
@@ -595,77 +595,6 @@ $stats['read'] = $conn->query("SELECT COUNT(*) as count FROM communications WHER
             if (e.target === this) this.style.display = 'none';
         });
     </script>
-</body>
-</html>
-<?php $conn->close(); ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Send Message Modal -->
-    <div class="modal fade" id="sendMessageModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <form method="POST">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Send Message</h5>
-                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" name="action" value="send_message">
-
-                        <div class="form-group">
-                            <label>Send To</label>
-                            <select name="recipient_id" class="form-control" required>
-                                <option value="">Select Recipient</option>
-                                <?php 
-                                $recipients = $conn->query("SELECT id, CONCAT(first_name, ' ', last_name, ' - ', email) as info, 'user' as type FROM users WHERE id != " . intval($_SESSION['user_id']) . " UNION ALL SELECT id, CONCAT(first_name, ' ', last_name, ' - ', email) as info, 'tenant' as type FROM tenants ORDER BY info");
-                                while($r = $recipients->fetch_assoc()): ?>
-                                <option value="<?php echo $r['type'] . ':' . $r['id']; ?>"><?php echo htmlspecialchars(ucfirst($r['type']) . ': ' . $r['info']); ?></option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Message Type</label>
-                            <select name="message_type" class="form-control" required>
-                                <option value="email">Email</option>
-                                <option value="sms">SMS</option>
-                                <option value="notification">In-App Notification</option>
-                                <option value="chat">Chat Message</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Subject</label>
-                            <input type="text" name="subject" class="form-control" placeholder="Message subject" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Message</label>
-                            <textarea name="message" class="form-control" rows="6" placeholder="Enter your message..." required></textarea>
-                        </div>
-
-                        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-                            <p style="margin: 0; font-size: 12px; color: #999;">
-                                <i class="fa fa-info-circle"></i> 
-                                <strong>Note:</strong> SMS messages are limited to 160 characters. Email and notifications support full text.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa fa-send"></i> Send Message</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/main.min.js"></script>
-    <script src="js/materialize.min.js"></script>`r`n    <script src="js/bootstrap.min.js"></script>
-    <script src="js/custom.js"></script>
 </body>
 </html>
 <?php $conn->close(); ?>

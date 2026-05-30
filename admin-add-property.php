@@ -322,11 +322,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script src="js/main.min.js"></script>
-    <script src="js/materialize.min.js"></script>`r`n    <script src="js/bootstrap.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
 </body>
 </html>
 <?php $conn->close(); ?>
+
 
 
 

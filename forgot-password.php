@@ -85,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_submit'])) {
                 </div>
                 <div class="ad-log-in-con">
                     <div class="log-in-pop-right">
-                        <h4>Forgot Password?</h4>
-                        <p>Enter your email address and we'll send you a link to reset your password</p>
+                        <h4>Forgot password</h4>
+                        <p>Enter your email and we will send you a password reset link.</p>
 
                         <?php if (!empty($message)): ?>
                             <div class="alert alert-<?php echo $message_type === 'error' ? 'danger' : 'success'; ?> alert-dismissible fade in" role="alert">
@@ -135,7 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_submit'])) {
 
     <!--Import jQuery before materialize.js-->
     <script src="js/main.min.js"></script>
-    <script src="js/materialize.min.js"></script>`r`n    <script src="js/bootstrap.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
 </body>
 
