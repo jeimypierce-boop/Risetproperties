@@ -42,7 +42,7 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
             <div class="col-md-2 col-sm-3 col-xs-6 sb1-1">
                 <a href="#" class="btn-close-menu"><i class="fa fa-times" aria-hidden="true"></i></a>
                 <a href="#" class="atab-menu"><i class="fa fa-bars tab-menu" aria-hidden="true"></i></a>
-                <a href="index-2.html" class="logo"><img src="images/logo1.png" alt="" />
+                <a href="admin-dashboard-modern.php" class="logo"><img src="images/logo1.png" alt="" />
                 </a>
             </div>
             <div class="col-md-6 col-sm-6 mob-hide">
@@ -160,11 +160,11 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
             <div class="sb2-2">
                 <div class="sb2-2-2">
                     <ul>
-                        <li><a href="index-2.html"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+                        <li><a href="admin-dashboard-modern.php"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
                         </li>
                         <li class="active-bre"><a href="#"> Settings</a>
                         </li>
-                        <li class="page-back"><a href="index-2.html"><i class="fa fa-backward" aria-hidden="true"></i> Back</a>
+                        <li class="page-back"><a href="admin-dashboard-modern.php"><i class="fa fa-backward" aria-hidden="true"></i> Back</a>
                         </li>
                     </ul>
                 </div>
@@ -514,3 +514,4 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
 </body>
 
 </html>
+

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'dbconnect.php';
 require_once 'auth_check.php';
 $errors = [];
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Riset Property Ltd admin â€“ view and edit tenant records and lease details.">
+    <meta name="description" content="Riset Property Ltd admin – view and edit tenant records and lease details.">
     <meta name="keyword" content="Riset Property Ltd, tenants, tenant management, leases, Kenya">
     <link rel="shortcut icon" href="images/fav.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700%7CJosefin+Sans:600,700" rel="stylesheet">
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="col-md-2 col-sm-3 col-xs-6 sb1-1">
                 <a href="#" class="btn-close-menu"><i class="fa fa-times" aria-hidden="true"></i></a>
                 <a href="#" class="atab-menu"><i class="fa fa-bars tab-menu" aria-hidden="true"></i></a>
-                <a href="index-2.html" class="logo"><img src="images/logo1.png" alt="" />
+                <a href="admin-dashboard-modern.php" class="logo"><img src="images/logo1.png" alt="" />
                 </a>
             </div>
             <div class="col-md-6 col-sm-6 mob-hide">
@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="sb2-2">
                 <div class="sb2-2-2">
                     <ul>
-                        <li><a href="index-2.html"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
+                        <li><a href="admin-dashboard-modern.php"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
                         </li>
                         <li class="active-bre"><a href="#"> Tenant Details</a>
                         </li>
@@ -336,6 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </body>
 </html>
 <?php $conn->close(); ?>
+
 
 
 
