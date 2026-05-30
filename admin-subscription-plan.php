@@ -179,5 +179,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
     <script src="js/admin-session.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('select');
+            if (typeof M !== 'undefined' && elems.length) {
+                M.FormSelect.init(elems);
+            }
+        });
+    </script>
 </body>
 </html>

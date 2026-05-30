@@ -45,10 +45,19 @@ if ($result === false) {
     die('Database query error: ' . $conn->error);
 }
 
+function fetch_count($conn, $sql) {
+    $result = $conn->query($sql);
+    if ($result === false) {
+        die('Database query error: ' . $conn->error . ' SQL: ' . $sql);
+    }
+    $row = $result->fetch_assoc();
+    return $row ? intval($row['count']) : 0;
+}
+
 $baseWhere = $landlord_id ? ' WHERE p.landlord_id = ' . intval($landlord_id) : '';
-$totalOccupied = $conn->query("SELECT COUNT(DISTINCT p.id) as count FROM properties p JOIN units u ON u.property_id = p.id AND u.status = 'Occupied'" . $baseWhere)->fetch_assoc()['count'];
-$totalVacant = $conn->query("SELECT COUNT(DISTINCT p.id) as count FROM properties p JOIN units u ON u.property_id = p.id AND u.status = 'Available'" . $baseWhere)->fetch_assoc()['count'];
-$totalProperties = $conn->query("SELECT COUNT(*) as count FROM properties" . $baseWhere)->fetch_assoc()['count'];
+$totalOccupied = fetch_count($conn, "SELECT COUNT(DISTINCT p.id) as count FROM properties p JOIN units u ON u.property_id = p.id AND u.status = 'Occupied'" . $baseWhere);
+$totalVacant = fetch_count($conn, "SELECT COUNT(DISTINCT p.id) as count FROM properties p JOIN units u ON u.property_id = p.id AND u.status = 'Available'" . $baseWhere);
+$totalProperties = fetch_count($conn, "SELECT COUNT(*) as count FROM properties p" . $baseWhere);
 ?>
 <!DOCTYPE html>
 <html lang="en">

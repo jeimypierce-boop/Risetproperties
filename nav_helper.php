@@ -66,7 +66,7 @@ if (!function_exists('display_mobile_auth_menu')) {
             } elseif (in_array($user_role, array('admin', 'teacher', 'staff', 'landlord'))) {
                 $html .= '<li><a href="admin-dashboard-modern.php">Admin Dashboard</a></li>';
                 $html .= '<li><a href="admin-user-all.php">Manage Users</a></li>';
-                $html .= '<li><a href="admin-all-properties.html">Manage Properties</a></li>';
+                $html .= '<li><a href="admin-properties.php">Manage Properties</a></li>';
             }
             $html .= '<li><a href="logout.php">Logout</a></li>';
         } else {
@@ -80,6 +80,7 @@ if (!function_exists('display_mobile_auth_menu')) {
     }
 }
 ?>
+
 
 
 

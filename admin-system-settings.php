@@ -1,6 +1,9 @@
 <?php
 require_once 'dbconnect.php';
 require_once 'auth_check.php';
+require_once 'settings_model.php';
+
+ensure_settings_tables($conn);
 
 $section = $_GET['section'] ?? 'overview';
 $sections = [
@@ -18,6 +21,124 @@ $sections = [
 ];
 
 $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Settings';
+
+$success_msg = '';
+$error_msg = '';
+
+$businessProfile = get_business_profile($conn);
+$serviceTypes = get_service_types($conn);
+$paymentModes = get_payment_modes($conn);
+$bankAccounts = get_bank_accounts($conn);
+$subscription = get_subscription_plan($conn);
+$invoiceJobs = get_latest_invoice_jobs($conn, 5);
+$createdBy = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    switch ($action) {
+        case 'save_business_profile':
+            $business_name = trim($_POST['business_name'] ?? '');
+            $business_email = trim($_POST['business_email'] ?? '');
+            $business_phone = trim($_POST['business_phone'] ?? '');
+            $business_address = trim($_POST['business_address'] ?? '');
+            $business_about = trim($_POST['business_about'] ?? '');
+
+            if ($business_name === '' || $business_email === '' || $business_phone === '' || $business_address === '') {
+                $error_msg = 'Please complete all business profile fields.';
+            } elseif (!filter_var($business_email, FILTER_VALIDATE_EMAIL)) {
+                $error_msg = 'Please enter a valid business email address.';
+            } else {
+                if (save_business_profile($conn, [
+                    'business_name' => $business_name,
+                    'business_email' => $business_email,
+                    'business_phone' => $business_phone,
+                    'business_address' => $business_address,
+                    'business_about' => $business_about,
+                ])) {
+                    $success_msg = 'Business profile saved successfully.';
+                    $businessProfile = get_business_profile($conn);
+                } else {
+                    $error_msg = 'Unable to save business profile. Please try again.';
+                }
+            }
+            break;
+
+        case 'add_service_type':
+            $service_name = trim($_POST['service_name'] ?? '');
+            if ($service_name === '') {
+                $error_msg = 'Please enter a service name.';
+            } elseif (add_service_type($conn, $service_name)) {
+                $success_msg = 'Service type added successfully.';
+                $serviceTypes = get_service_types($conn);
+            } else {
+                $error_msg = 'Unable to add service type. It may already exist.';
+            }
+            break;
+
+        case 'add_payment_mode':
+            $payment_mode_name = trim($_POST['payment_mode_name'] ?? '');
+            if ($payment_mode_name === '') {
+                $error_msg = 'Please enter a payment mode name.';
+            } elseif (add_payment_mode($conn, $payment_mode_name)) {
+                $success_msg = 'Payment mode added successfully.';
+                $paymentModes = get_payment_modes($conn);
+            } else {
+                $error_msg = 'Unable to add payment mode. It may already exist.';
+            }
+            break;
+
+        case 'add_bank_account':
+            $bank_name = trim($_POST['bank_name'] ?? '');
+            $account_number = trim($_POST['account_number'] ?? '');
+            $account_name = trim($_POST['account_name'] ?? '');
+            if ($bank_name === '' || $account_number === '' || $account_name === '') {
+                $error_msg = 'Please provide all bank account details.';
+            } elseif (add_bank_account($conn, $bank_name, $account_number, $account_name)) {
+                $success_msg = 'Bank account added successfully.';
+                $bankAccounts = get_bank_accounts($conn);
+            } else {
+                $error_msg = 'Unable to add bank account. Please try again.';
+            }
+            break;
+
+        case 'save_subscription_plan':
+            $plan_name = trim($_POST['plan_name'] ?? '');
+            $amount = trim($_POST['plan_amount'] ?? '');
+            $status = trim($_POST['plan_status'] ?? '');
+            $valid_until = trim($_POST['plan_valid_until'] ?? '');
+
+            if ($plan_name === '' || $amount === '' || $status === '' || $valid_until === '') {
+                $error_msg = 'Please complete all subscription plan fields.';
+            } elseif (!is_numeric($amount) || $amount < 0) {
+                $error_msg = 'Please enter a valid monthly amount.';
+            } else {
+                if (save_subscription_plan($conn, $plan_name, $amount, $status, $valid_until)) {
+                    $success_msg = 'Subscription plan saved successfully.';
+                    $subscription = get_subscription_plan($conn);
+                } else {
+                    $error_msg = 'Unable to save subscription plan. Please try again.';
+                }
+            }
+            break;
+
+        case 'generate_invoices':
+        case 'regenerate_month':
+            $invoice_month = trim($_POST['invoice_month'] ?? '');
+            if ($invoice_month === '') {
+                $error_msg = 'Please select a month first.';
+            } else {
+                $jobType = $action === 'generate_invoices' ? 'generate' : 'regenerate';
+                if (record_invoice_job($conn, $jobType, $invoice_month, $createdBy)) {
+                    $success_msg = $jobType === 'generate' ? 'Invoice generation requested successfully.' : 'Invoice regeneration requested successfully.';
+                    $invoiceJobs = get_latest_invoice_jobs($conn, 5);
+                } else {
+                    $error_msg = 'Unable to record invoice job. Please try again.';
+                }
+            }
+            break;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,15 +175,15 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
             <div class="col-md-2 tab-hide">
                 <div class="top-not-cen">
                     <a class='waves-effect btn-noti' href="admin-all-enquiry.html" title="All Enquiries messages"><i class="fa fa-commenting-o" aria-hidden="true"></i><span>5</span></a>
-                    <a class='waves-effect btn-noti' href="admin-Property-enquiry.html" title="property enquiry messages"><i class="fa fa-envelope-o" aria-hidden="true"></i><span>5</span></a>
+                    <a class='waves-effect btn-noti' href="admin-Property-enquiry.html" title="Property enquiry messages"><i class="fa fa-envelope-o" aria-hidden="true"></i><span>5</span></a>
                     <a class='waves-effect btn-noti' href="admin-admission-enquiry.html" title="Tenant Enquiry"><i class="fa fa-tag" aria-hidden="true"></i><span>5</span></a>
                 </div>
             </div>
             <div class="col-md-2 col-sm-3 col-xs-6">
-                <a class='waves-effect dropdown-button top-user-pro' href='#' data-activates='top-menu'><img src="images/user/6.png" alt="" />My Account <i class="fa fa-angle-down" aria-hidden="true"></i>
+                <a class='waves-effect dropdown-button top-user-pro' href='#' data-activates='top-menu'><img src="images/user/6.png" alt="" /> My Account <i class="fa fa-angle-down" aria-hidden="true"></i>
                 </a>
                 <ul id='top-menu' class='dropdown-content top-menu-sty'>
-                    <li><a href="admin-system-settings.php?section=overview" class="waves-effect"><i class="fa fa-cogs" aria-hidden="true"></i>Admin Setting</a>
+                    <li><a href="admin-system-settings.php?section=overview" class="waves-effect"><i class="fa fa-cogs" aria-hidden="true"></i> Admin Settings</a>
                     </li>
                     <li class="divider"></li>
                     <li><a href="logout.php" class="ho-dr-con-last waves-effect"><i class="fa fa-sign-in" aria-hidden="true"></i> Logout</a>
@@ -71,101 +192,41 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
             </div>
         </div>
     </div>
+
     <div class="container-fluid sb2">
         <div class="row">
             <div class="sb2-1">
                 <div class="sb2-12">
                     <ul>
-                        <li><img src="images/placeholder.jpg" alt="">
-                        </li>
+                        <li><img src="images/placeholder.jpg" alt=""></li>
                         <li>
-                            <h5>My Account <span>Guest</span></h5>
+                            <h5>System Settings <span>Manage business and billing settings</span></h5>
                         </li>
-                        <li></li>
                     </ul>
                 </div>
                 <div class="sb2-13">
                     <ul class="collapsible" data-collapsible="accordion">
-                        <li><a href="admin-dashboard-modern.php" class="menu-active"><i class="fa fa-bar-chart" aria-hidden="true"></i> Dashboard</a>
-                        </li>
-                        <li><a href="admin-system-settings.php?section=overview"><i class="fa fa-cogs" aria-hidden="true"></i> Site Setting</a>
-                        </li>
-                        <li><a href="javascript:void(0)" class="collapsible-header"><i class="fa fa-book" aria-hidden="true"></i> All Properties</a>
-                            <div class="collapsible-body left-sub-menu">
-                                <ul>
-                                    <li><a href="admin-properties.php">All Properties</a>
-                                    </li>
-                                    <li><a href="admin-add-property.php">Add New Property</a>
-                                    </li>
-                                    <li><a href="admin-trash-Properties.html">Trash Property</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li><a href="javascript:void(0)" class="collapsible-header"><i class="fa fa-users" aria-hidden="true"></i> Tenants</a>
-                            <div class="collapsible-body left-sub-menu">
-                                <ul>
-                                    <li><a href="admin-user-all.php">All Tenants</a>
-                                    </li>
-                                    <li><a href="admin-user-add.php">Add New Tenant</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li><a href="javascript:void(0)" class="collapsible-header"><i class="fa fa-calendar" aria-hidden="true"></i> Viewings</a>
-                            <div class="collapsible-body left-sub-menu">
-                                <ul>
-                                    <li><a href="admin-event-all.html">All Viewings</a>
-                                    </li>
-                                    <li><a href="admin-event-add.html">Schedule New Viewing</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li><a href="javascript:void(0)" class="collapsible-header"><i class="fa fa-wrench" aria-hidden="true"></i> Maintenance</a>
-                            <div class="collapsible-body left-sub-menu">
-                                <ul>
-                                    <li><a href="admin-seminar-all.html">All Maintenance Tasks</a>
-                                    </li>
-                                    <li><a href="admin-seminar-add.html">Create Maintenance Task</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li><a href="javascript:void(0)" class="collapsible-header"><i class="fa fa-commenting-o" aria-hidden="true"></i> Enquiry</a>
-                            <div class="collapsible-body left-sub-menu">
-                                <ul>
-                                    <li><a href="admin-all-enquiry.html">All Enquiries</a></li>
-                                    <li><a href="admin-Property-enquiry.html">Property Enquiry</a></li>
-                                    <li><a href="admin-admission-enquiry.html">Tenant Enquiry</a></li>
-                                    <li><a href="admin-seminar-enquiry.html">Maintenance Enquiry</a></li>
-                                    <li><a href="admin-event-enquiry.html">Viewing Enquiry</a></li>
-                                    <li><a href="admin-common-enquiry.html">Common Enquiry</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                        <li><a href="javascript:void(0)" class="collapsible-header"><i class="fa fa-cloud-download" aria-hidden="true"></i> Import & Export</a>
-                            <div class="collapsible-body left-sub-menu">
-                                <ul>
-                                    <li><a href="admin-export-data.html">Export Data</a>
-                                    </li>
-                                    <li><a href="admin-import-data.html">Import Data</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
+                        <li><a href="admin-dashboard-modern.php"><i class="fa fa-bar-chart" aria-hidden="true"></i> Dashboard</a></li>
+                        <li><a href="admin-system-settings.php?section=overview" class="<?php echo $section === 'overview' ? 'menu-active' : ''; ?>"><i class="fa fa-cogs" aria-hidden="true"></i> Site Setting</a></li>
+                        <li><a href="admin-system-settings.php?section=business-profile" class="<?php echo $section === 'business-profile' ? 'menu-active' : ''; ?>"><i class="fa fa-building" aria-hidden="true"></i> Business Profile</a></li>
+                        <li><a href="admin-system-settings.php?section=services" class="<?php echo $section === 'services' ? 'menu-active' : ''; ?>"><i class="fa fa-wrench" aria-hidden="true"></i> Services</a></li>
+                        <li><a href="admin-system-settings.php?section=role-permissions" class="<?php echo $section === 'role-permissions' ? 'menu-active' : ''; ?>"><i class="fa fa-users" aria-hidden="true"></i> Role & Permissions</a></li>
+                        <li><a href="admin-system-settings.php?section=banks" class="<?php echo $section === 'banks' ? 'menu-active' : ''; ?>"><i class="fa fa-bank" aria-hidden="true"></i> Banks</a></li>
+                        <li><a href="admin-system-settings.php?section=payment-modes" class="<?php echo $section === 'payment-modes' ? 'menu-active' : ''; ?>"><i class="fa fa-credit-card" aria-hidden="true"></i> Payment Modes</a></li>
+                        <li><a href="admin-system-settings.php?section=subscription-plan" class="<?php echo $section === 'subscription-plan' ? 'menu-active' : ''; ?>"><i class="fa fa-star" aria-hidden="true"></i> Subscription Plan</a></li>
+                        <li><a href="admin-system-settings.php?section=billing-invoices" class="<?php echo $section === 'billing-invoices' ? 'menu-active' : ''; ?>"><i class="fa fa-file-text" aria-hidden="true"></i> Billing Invoices</a></li>
+                        <li><a href="admin-system-settings.php?section=upgrade" class="<?php echo $section === 'upgrade' ? 'menu-active' : ''; ?>"><i class="fa fa-arrow-up" aria-hidden="true"></i> Upgrade Plan</a></li>
+                        <li><a href="admin-system-settings.php?section=generate-invoices" class="<?php echo $section === 'generate-invoices' ? 'menu-active' : ''; ?>"><i class="fa fa-file" aria-hidden="true"></i> Generate Invoices</a></li>
+                        <li><a href="admin-system-settings.php?section=regenerate-month" class="<?php echo $section === 'regenerate-month' ? 'menu-active' : ''; ?>"><i class="fa fa-refresh" aria-hidden="true"></i> Regenerate Month</a></li>
                     </ul>
                 </div>
             </div>
             <div class="sb2-2">
                 <div class="sb2-2-2">
                     <ul>
-                        <li><a href="admin-dashboard-modern.php"><i class="fa fa-home" aria-hidden="true"></i> Home</a>
-                        </li>
-                        <li class="active-bre"><a href="#"> Settings</a>
-                        </li>
-                        <li class="page-back"><a href="admin-dashboard-modern.php"><i class="fa fa-backward" aria-hidden="true"></i> Back</a>
-                        </li>
+                        <li><a href="admin-dashboard-modern.php"><i class="fa fa-home" aria-hidden="true"></i> Home</a></li>
+                        <li class="active-bre"><a href="#"><?php echo htmlspecialchars($sectionTitle); ?></a></li>
+                        <li class="page-back"><a href="admin-dashboard-modern.php"><i class="fa fa-backward" aria-hidden="true"></i> Back</a></li>
                     </ul>
                 </div>
                 <div class="sb2-2-3">
@@ -174,102 +235,122 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
                             <div class="box-inn-sp admin-form">
                                 <div class="inn-title">
                                     <h4><?php echo htmlspecialchars($sectionTitle); ?></h4>
-                                    <p>Use the controls below to manage your system settings, business profile, billing, and billing workflows.</p>
+                                    <p>Use this area to manage your agency settings, subscription, banks, and billing workflows.</p>
                                 </div>
                                 <div class="tab-inn">
+                                    <?php if ($success_msg): ?>
+                                        <div class="card-panel green lighten-4 green-text text-darken-4"><?php echo htmlspecialchars($success_msg); ?></div>
+                                    <?php endif; ?>
+                                    <?php if ($error_msg): ?>
+                                        <div class="card-panel red lighten-4 red-text text-darken-4"><?php echo htmlspecialchars($error_msg); ?></div>
+                                    <?php endif; ?>
+
                                     <?php if ($section === 'overview'): ?>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="box-inn-sp admin-form">
                                                     <h5>Subscription & Billing</h5>
-                                                    <p>View plan details, invoices, and upgrade options.</p>
-                                                    <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Plan details</a>
-                                                    <a href="admin-billing-invoices.php" class="waves-effect waves-light btn">Invoices</a>
-                                                    <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Upgrade</a>
+                                                    <p><strong>Plan:</strong> <?php echo htmlspecialchars($subscription['plan_name']); ?></p>
+                                                    <p><strong>Amount:</strong> KES <?php echo htmlspecialchars($subscription['amount']); ?> / month</p>
+                                                    <p><strong>Status:</strong> <?php echo htmlspecialchars(ucfirst($subscription['status'])); ?></p>
+                                                    <p><strong>Valid Until:</strong> <?php echo htmlspecialchars($subscription['valid_until']); ?></p>
+                                                    <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Manage subscription</a>
+                                                    <a href="admin-invoice-tools.php" class="waves-effect waves-light btn">Invoice tools</a>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="box-inn-sp admin-form">
                                                     <h5>Agency Settings</h5>
-                                                    <p>Manage business profile, services, and roles.</p>
-                                                    <a href="admin-business-profile.php" class="waves-effect waves-light btn">Business Profile</a>
-                                                    <a href="admin-services.php" class="waves-effect waves-light btn">Services</a>
-                                                    <a href="admin-role-permissions.php" class="waves-effect waves-light btn">Roles & Permissions</a>
+                                                    <p><strong>Services:</strong> <?php echo count($serviceTypes); ?></p>
+                                                    <p><strong>Payment modes:</strong> <?php echo count($paymentModes); ?></p>
+                                                    <p><strong>Banks:</strong> <?php echo count($bankAccounts); ?></p>
+                                                    <a href="admin-system-settings.php?section=business-profile" class="waves-effect waves-light btn">Business profile</a>
+                                                    <a href="admin-system-settings.php?section=services" class="waves-effect waves-light btn">Services</a>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="box-inn-sp admin-form">
                                                     <h5>Payments</h5>
-                                                    <p>Configure banks, payment modes, and invoice generation.</p>
-                                                    <a href="admin-banks.php" class="waves-effect waves-light btn">Banks</a>
-                                                    <a href="admin-payment-modes.php" class="waves-effect waves-light btn">Payment Modes</a>
-                                                    <a href="admin-invoice-tools.php" class="waves-effect waves-light btn">Invoice tools</a>
+                                                    <p>Keep payment setup updated for tenant collections.</p>
+                                                    <a href="admin-system-settings.php?section=banks" class="waves-effect waves-light btn">Banks</a>
+                                                    <a href="admin-system-settings.php?section=payment-modes" class="waves-effect waves-light btn">Payment modes</a>
+                                                    <a href="admin-system-settings.php?section=generate-invoices" class="waves-effect waves-light btn">Generate invoices</a>
                                                 </div>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'business-profile'): ?>
-                                        <form>
+                                        <form method="post">
+                                            <input type="hidden" name="action" value="save_business_profile">
                                             <div class="row">
                                                 <div class="input-field col s6">
-                                                    <input id="business_name" type="text" class="validate" value="Riset Property Ltd">
+                                                    <input id="business_name" name="business_name" type="text" class="validate" value="<?php echo htmlspecialchars($businessProfile['business_name']); ?>">
                                                     <label for="business_name" class="active">Business name</label>
                                                 </div>
                                                 <div class="input-field col s6">
-                                                    <input id="business_email" type="email" class="validate" value="info@risetproperties.co.ke">
+                                                    <input id="business_email" name="business_email" type="email" class="validate" value="<?php echo htmlspecialchars($businessProfile['business_email']); ?>">
                                                     <label for="business_email" class="active">Business email</label>
                                                 </div>
                                             </div>
                                             <div class="row">
                                                 <div class="input-field col s6">
-                                                    <input id="business_phone" type="text" class="validate" value="+254 700 000 000">
+                                                    <input id="business_phone" name="business_phone" type="text" class="validate" value="<?php echo htmlspecialchars($businessProfile['business_phone']); ?>">
                                                     <label for="business_phone" class="active">Phone number</label>
                                                 </div>
                                                 <div class="input-field col s6">
-                                                    <input id="business_address" type="text" class="validate" value="Nairobi, Kenya">
+                                                    <input id="business_address" name="business_address" type="text" class="validate" value="<?php echo htmlspecialchars($businessProfile['business_address']); ?>">
                                                     <label for="business_address" class="active">Business address</label>
                                                 </div>
                                             </div>
                                             <div class="row">
                                                 <div class="input-field col s12">
-                                                    <textarea id="business_about" class="materialize-textarea">Describe the agency, location and service scope.</textarea>
-                                                    <label for="business_about" class="active">About</label>
+                                                    <textarea id="business_about" name="business_about" class="materialize-textarea"><?php echo htmlspecialchars($businessProfile['business_about']); ?></textarea>
+                                                    <label for="business_about" class="active">About the agency</label>
                                                 </div>
                                             </div>
                                             <div class="row">
                                                 <div class="col-md-12">
-                                                    <button type="button" class="waves-effect waves-light btn">Save business profile</button>
+                                                    <button type="submit" class="waves-effect waves-light btn">Save business profile</button>
                                                 </div>
                                             </div>
                                         </form>
+
                                     <?php elseif ($section === 'services'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Service Types</h5>
                                                 <p>Add or update the service types your agency offers.</p>
                                                 <ul class="collection">
-                                                    <li class="collection-item">Rent Collection</li>
-                                                    <li class="collection-item">Maintenance</li>
-                                                    <li class="collection-item">Viewings</li>
-                                                    <li class="collection-item">Tenant Onboarding</li>
+                                                    <?php if (empty($serviceTypes)): ?>
+                                                        <li class="collection-item">No service types configured yet.</li>
+                                                    <?php else: ?>
+                                                        <?php foreach ($serviceTypes as $service): ?>
+                                                            <li class="collection-item"><?php echo htmlspecialchars($service['name']); ?></li>
+                                                        <?php endforeach; ?>
+                                                    <?php endif; ?>
                                                 </ul>
                                             </div>
                                             <div class="col-md-12">
-                                                <div class="row">
-                                                    <div class="input-field col s8">
-                                                        <input id="new_service" type="text" class="validate">
-                                                        <label for="new_service">New service name</label>
+                                                <form method="post">
+                                                    <input type="hidden" name="action" value="add_service_type">
+                                                    <div class="row">
+                                                        <div class="input-field col s8">
+                                                            <input id="service_name" name="service_name" type="text" class="validate" value="<?php echo isset($_POST['service_name']) ? htmlspecialchars($_POST['service_name']) : ''; ?>">
+                                                            <label for="service_name" class="active">New service type</label>
+                                                        </div>
+                                                        <div class="input-field col s4">
+                                                            <button type="submit" class="waves-effect waves-light btn">Add service</button>
+                                                        </div>
                                                     </div>
-                                                    <div class="input-field col s4">
-                                                        <button type="button" class="waves-effect waves-light btn">Add service</button>
-                                                    </div>
-                                                </div>
+                                                </form>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'role-permissions'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Roles & Permissions</h5>
-                                                <p>Define which pages and actions each role can access.</p>
+                                                <p>Define what each user role can access in the system.</p>
                                                 <table class="striped responsive-table">
                                                     <thead>
                                                         <tr>
@@ -280,26 +361,27 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
                                                     <tbody>
                                                         <tr>
                                                             <td>Owner</td>
-                                                            <td>Full access</td>
+                                                            <td>Full access to all modules and settings</td>
                                                         </tr>
                                                         <tr>
                                                             <td>Property Manager</td>
-                                                            <td>Manage properties, tenants, invoices</td>
+                                                            <td>Manage properties, tenants, invoices, and reports</td>
                                                         </tr>
                                                         <tr>
                                                             <td>Agent</td>
-                                                            <td>Viewings, enquiries, reports</td>
+                                                            <td>Manage viewings, enquiries, and tenant communications</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
                                                 <button type="button" class="waves-effect waves-light btn">Edit role permissions</button>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'banks'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Bank Accounts</h5>
-                                                <p>Manage bank names, account details and default accounts.</p>
+                                                <p>Manage the accounts used for tenant collections and payments.</p>
                                                 <table class="striped responsive-table">
                                                     <thead>
                                                         <tr>
@@ -309,191 +391,240 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
-                                                            <td>Equity Bank</td>
-                                                            <td>01-2345678</td>
-                                                            <td>Riset Property Ltd</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Co-operative Bank</td>
-                                                            <td>12-3456789</td>
-                                                            <td>Riset Property Ltd</td>
-                                                        </tr>
+                                                        <?php if (empty($bankAccounts)): ?>
+                                                            <tr>
+                                                                <td colspan="3">No bank accounts configured yet.</td>
+                                                            </tr>
+                                                        <?php else: ?>
+                                                            <?php foreach ($bankAccounts as $bank): ?>
+                                                                <tr>
+                                                                    <td><?php echo htmlspecialchars($bank['bank_name']); ?></td>
+                                                                    <td><?php echo htmlspecialchars($bank['account_number']); ?></td>
+                                                                    <td><?php echo htmlspecialchars($bank['account_name']); ?></td>
+                                                                </tr>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
                                                     </tbody>
                                                 </table>
                                             </div>
                                             <div class="col-md-12">
-                                                <div class="row">
-                                                    <div class="input-field col s4">
-                                                        <input id="bank_name" type="text" class="validate">
-                                                        <label for="bank_name">Bank name</label>
+                                                <form method="post">
+                                                    <input type="hidden" name="action" value="add_bank_account">
+                                                    <div class="row">
+                                                        <div class="input-field col s4">
+                                                            <input id="bank_name" name="bank_name" type="text" class="validate" value="<?php echo isset($_POST['bank_name']) ? htmlspecialchars($_POST['bank_name']) : ''; ?>">
+                                                            <label for="bank_name" class="active">Bank name</label>
+                                                        </div>
+                                                        <div class="input-field col s4">
+                                                            <input id="account_number" name="account_number" type="text" class="validate" value="<?php echo isset($_POST['account_number']) ? htmlspecialchars($_POST['account_number']) : ''; ?>">
+                                                            <label for="account_number" class="active">Account number</label>
+                                                        </div>
+                                                        <div class="input-field col s4">
+                                                            <input id="account_name" name="account_name" type="text" class="validate" value="<?php echo isset($_POST['account_name']) ? htmlspecialchars($_POST['account_name']) : ''; ?>">
+                                                            <label for="account_name" class="active">Account name</label>
+                                                        </div>
                                                     </div>
-                                                    <div class="input-field col s4">
-                                                        <input id="account_number" type="text" class="validate">
-                                                        <label for="account_number">Account number</label>
-                                                    </div>
-                                                    <div class="input-field col s4">
-                                                        <input id="account_name" type="text" class="validate">
-                                                        <label for="account_name">Account name</label>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="waves-effect waves-light btn">Add bank account</button>
+                                                    <button type="submit" class="waves-effect waves-light btn">Add bank account</button>
+                                                </form>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'payment-modes'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <h5>Payment Methods</h5>
-                                                <p>Manage accepted payment modes for tenants.</p>
+                                                <h5>Payment Modes</h5>
+                                                <p>Manage accepted payment methods for tenants.</p>
                                                 <ul class="collection">
-                                                    <li class="collection-item">M-PESA</li>
-                                                    <li class="collection-item">Bank Transfer</li>
-                                                    <li class="collection-item">Cash</li>
-                                                    <li class="collection-item">Credit Card</li>
+                                                    <?php if (empty($paymentModes)): ?>
+                                                        <li class="collection-item">No payment modes configured yet.</li>
+                                                    <?php else: ?>
+                                                        <?php foreach ($paymentModes as $mode): ?>
+                                                            <li class="collection-item"><?php echo htmlspecialchars($mode['name']); ?></li>
+                                                        <?php endforeach; ?>
+                                                    <?php endif; ?>
                                                 </ul>
                                             </div>
                                             <div class="col-md-12">
-                                                <div class="row">
-                                                    <div class="input-field col s8">
-                                                        <input id="payment_mode_name" type="text" class="validate">
-                                                        <label for="payment_mode_name">New payment mode</label>
+                                                <form method="post">
+                                                    <input type="hidden" name="action" value="add_payment_mode">
+                                                    <div class="row">
+                                                        <div class="input-field col s8">
+                                                            <input id="payment_mode_name" name="payment_mode_name" type="text" class="validate" value="<?php echo isset($_POST['payment_mode_name']) ? htmlspecialchars($_POST['payment_mode_name']) : ''; ?>">
+                                                            <label for="payment_mode_name" class="active">New payment mode</label>
+                                                        </div>
+                                                        <div class="input-field col s4">
+                                                            <button type="submit" class="waves-effect waves-light btn">Add payment mode</button>
+                                                        </div>
                                                     </div>
-                                                    <div class="input-field col s4">
-                                                        <button type="button" class="waves-effect waves-light btn">Add payment mode</button>
-                                                    </div>
-                                                </div>
+                                                </form>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'subscription-plan'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Subscription Plan</h5>
-                                                <p>Review current plan details and update your subscription.</p>
+                                                <p>Review and update your current subscription details.</p>
                                                 <div class="row">
                                                     <div class="col-md-3 col-sm-6">
-                                                        <strong>Selected Plan</strong>
-                                                        <p>Starter Plan</p>
+                                                        <strong>Plan</strong>
+                                                        <p><?php echo htmlspecialchars($subscription['plan_name']); ?></p>
                                                     </div>
                                                     <div class="col-md-3 col-sm-6">
-                                                        <strong>Billed At</strong>
-                                                        <p>KES 5,000 / month</p>
+                                                        <strong>Amount</strong>
+                                                        <p>KES <?php echo htmlspecialchars($subscription['amount']); ?> / month</p>
                                                     </div>
                                                     <div class="col-md-3 col-sm-6">
                                                         <strong>Status</strong>
-                                                        <p>Trial</p>
+                                                        <p><?php echo htmlspecialchars(ucfirst($subscription['status'])); ?></p>
                                                     </div>
                                                     <div class="col-md-3 col-sm-6">
                                                         <strong>Valid Until</strong>
-                                                        <p>2026-05-31</p>
+                                                        <p><?php echo htmlspecialchars($subscription['valid_until']); ?></p>
                                                     </div>
                                                 </div>
-                                                <button type="button" class="waves-effect waves-light btn">Change plan</button>
+                                                <form method="post">
+                                                    <input type="hidden" name="action" value="save_subscription_plan">
+                                                    <div class="row">
+                                                        <div class="input-field col s6">
+                                                            <input id="plan_name" name="plan_name" type="text" class="validate" value="<?php echo htmlspecialchars($subscription['plan_name']); ?>">
+                                                            <label for="plan_name" class="active">Plan Name</label>
+                                                        </div>
+                                                        <div class="input-field col s6">
+                                                            <input id="plan_amount" name="plan_amount" type="number" min="0" class="validate" value="<?php echo htmlspecialchars($subscription['amount']); ?>">
+                                                            <label for="plan_amount" class="active">Monthly Amount (KES)</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="input-field col s6">
+                                                            <select id="plan_status" name="plan_status">
+                                                                <option value="active" <?php echo $subscription['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
+                                                                <option value="trial" <?php echo $subscription['status'] === 'trial' ? 'selected' : ''; ?>>Trial</option>
+                                                                <option value="paused" <?php echo $subscription['status'] === 'paused' ? 'selected' : ''; ?>>Paused</option>
+                                                            </select>
+                                                            <label for="plan_status">Subscription Status</label>
+                                                        </div>
+                                                        <div class="input-field col s6">
+                                                            <input id="plan_valid_until" name="plan_valid_until" type="date" class="validate" value="<?php echo htmlspecialchars($subscription['valid_until']); ?>">
+                                                            <label for="plan_valid_until" class="active">Valid Until</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <button type="submit" class="waves-effect waves-light btn">Save subscription plan</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'billing-invoices'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Billing Invoices</h5>
-                                                <p>Review generated billing invoices and access invoice records.</p>
+                                                <p>Review recent invoice jobs and access billing history.</p>
                                                 <table class="striped responsive-table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Invoice #</th>
-                                                            <th>Amount</th>
+                                                            <th>Type</th>
+                                                            <th>Month</th>
                                                             <th>Status</th>
-                                                            <th>Issued</th>
+                                                            <th>Created</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr>
-                                                            <td>INV-2026-001</td>
-                                                            <td>KES 5,000</td>
-                                                            <td>Paid</td>
-                                                            <td>2026-05-01</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>INV-2026-002</td>
-                                                            <td>KES 5,000</td>
-                                                            <td>Pending</td>
-                                                            <td>2026-06-01</td>
-                                                        </tr>
+                                                        <?php if (empty($invoiceJobs)): ?>
+                                                            <tr>
+                                                                <td colspan="4">No invoice jobs have been recorded yet.</td>
+                                                            </tr>
+                                                        <?php else: ?>
+                                                            <?php foreach ($invoiceJobs as $job): ?>
+                                                                <tr>
+                                                                    <td><?php echo ucfirst(htmlspecialchars($job['job_type'])); ?></td>
+                                                                    <td><?php echo htmlspecialchars($job['target_month']); ?></td>
+                                                                    <td><?php echo htmlspecialchars($job['status']); ?></td>
+                                                                    <td><?php echo htmlspecialchars($job['created_at']); ?></td>
+                                                                </tr>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
                                                     </tbody>
                                                 </table>
+                                                <a href="admin-invoice-tools.php" class="waves-effect waves-light btn">Open invoice tools</a>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'upgrade'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Upgrade Plan</h5>
-                                                <p>Choose a higher plan if you need more features or capacity.</p>
+                                                <p>Choose a higher plan if you need more capacity or premium features.</p>
                                                 <div class="row">
                                                     <div class="col-md-4">
                                                         <div class="box-inn-sp admin-form">
                                                             <h6>Starter</h6>
                                                             <p>KES 5,000 / month</p>
-                                                            <button type="button" class="waves-effect waves-light btn">Select Starter</button>
+                                                            <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Select Starter</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <div class="box-inn-sp admin-form">
                                                             <h6>Growth</h6>
                                                             <p>KES 10,000 / month</p>
-                                                            <button type="button" class="waves-effect waves-light btn">Select Growth</button>
+                                                            <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Select Growth</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <div class="box-inn-sp admin-form">
                                                             <h6>Enterprise</h6>
                                                             <p>Custom pricing</p>
-                                                            <button type="button" class="waves-effect waves-light btn">Contact Sales</button>
+                                                            <a href="admin-subscription-plan.php" class="waves-effect waves-light btn">Contact Sales</a>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'generate-invoices'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Generate Monthly Invoices</h5>
-                                                <p>Create rent invoices for a selected month.</p>
-                                                <form>
+                                                <p>Create rent billing for the selected month.</p>
+                                                <form method="post">
+                                                    <input type="hidden" name="action" value="generate_invoices">
                                                     <div class="row">
                                                         <div class="input-field col s4">
-                                                            <input id="invoice_month" type="month" class="validate" value="2026-06">
-                                                            <label for="invoice_month" class="active">Select month</label>
+                                                            <input id="invoice_month" name="invoice_month" type="month" class="validate" value="<?php echo date('Y-m'); ?>">
+                                                            <label for="invoice_month" class="active">Invoice month</label>
                                                         </div>
-                                                        <div class="input-field col s4">
-                                                            <p>Auto-generate invoices every 5 minutes.</p>
-                                                            <label>
-                                                                <input type="checkbox" checked>
-                                                                <span></span>
-                                                            </label>
-                                                        </div>
-                                                        <div class="input-field col s4">
-                                                            <button type="button" class="waves-effect waves-light btn">Generate Invoices</button>
+                                                        <div class="input-field col s8">
+                                                            <button type="submit" class="waves-effect waves-light btn">Generate invoices</button>
+                                                            <a href="admin-invoice-tools.php" class="waves-effect waves-light btn grey">Invoice tools</a>
                                                         </div>
                                                     </div>
                                                 </form>
                                             </div>
                                         </div>
+
                                     <?php elseif ($section === 'regenerate-month'): ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <h5>Regenerate Month</h5>
-                                                <p>Removes invoices for the selected month and rebuilds clean rent invoices.</p>
-                                                <form>
+                                                <p>Reset invoices for a selected month and rebuild them cleanly.</p>
+                                                <form method="post">
+                                                    <input type="hidden" name="action" value="regenerate_month">
                                                     <div class="row">
                                                         <div class="input-field col s6">
-                                                            <input id="regenerate_month" type="month" class="validate" value="2026-06">
-                                                            <label for="regenerate_month" class="active">Choose month</label>
+                                                            <input id="invoice_month" name="invoice_month" type="month" class="validate" value="<?php echo date('Y-m'); ?>">
+                                                            <label for="invoice_month" class="active">Select month</label>
                                                         </div>
                                                         <div class="input-field col s6">
-                                                            <button type="button" class="waves-effect waves-light btn red">Regenerate Month</button>
+                                                            <button type="submit" class="waves-effect waves-light btn red">Regenerate month</button>
                                                         </div>
                                                     </div>
                                                 </form>
                                             </div>
                                         </div>
+
                                     <?php else: ?>
                                         <p>This settings section does not exist.</p>
                                     <?php endif; ?>
@@ -511,6 +642,14 @@ $sectionTitle = isset($sections[$section]) ? $sections[$section] : 'System Setti
     <script src="js/bootstrap.min.js"></script>
     <script src="js/custom.js"></script>
     <script src="js/admin-session.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('select');
+            if (typeof M !== 'undefined' && elems.length) {
+                M.FormSelect.init(elems);
+            }
+        });
+    </script>
 </body>
 
 </html>

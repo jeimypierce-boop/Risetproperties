@@ -689,7 +689,7 @@ $user_info = get_user_info();
                 <i class="fa fa-eye"></i>
             </a>
             <span style="font-size: 12px; color: #666; margin-right: 10px;"><?php echo get_user_role_label(); ?></span>
-            <a href="admin-setting.html" class="rd-profile" title="Profile"><?php echo strtoupper(substr($user_info['name'], 0, 1)); ?></a>
+            <a href="admin-system-settings.php?section=overview" class="rd-profile" title="Profile"><?php echo strtoupper(substr($user_info['name'], 0, 1)); ?></a>
         </div>
     </div>
     
@@ -713,7 +713,7 @@ $user_info = get_user_info();
             <li><a href="admin-event-all.html"><i class="fa fa-calendar"></i> Viewings</a></li>
             <li><a href="admin-reports.php"><i class="fa fa-bar-chart"></i> Reports</a></li>
             <li><a href="admin-communications.php"><i class="fa fa-envelope"></i> Communications</a></li>
-            <li><a href="admin-setting.html"><i class="fa fa-cogs"></i> Settings</a></li>
+            <li><a href="admin-system-settings.php?section=overview"><i class="fa fa-cogs"></i> Settings</a></li>
             <li><a href="admin-login.html"><i class="fa fa-sign-out"></i> Logout</a></li>
         </ul>
     </div>
